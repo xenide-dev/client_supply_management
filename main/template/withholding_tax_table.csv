@@ -1,0 +1,20 @@
+Daily,1,2,3,4,5,6
+Compensation Start,1,685,1096,2192,5479,21918
+Compensation End,684,1095,2191,5478,21917,
+Withholding Tax (Base),0,0,82.19,356.16,1342.47,6602.74
+Withholding Tax (Percentage),0,0.2,0.25,0.3,0.32,0.35
+Weekly,,,,,,
+Compensation Start,1,4808,7692,15385,38462,153846
+Compensation End,4807,7691,15384,38461,153845,
+Withholding Tax (Base),0,0,576.92,2500,9423.08,46346.15
+Withholding Tax (Percentage),0,0.2,0.25,0.3,0.32,0.35
+Semi-Monthly,,,,,,
+Compensation Start,1,10417,16667,33333,83333,333333
+Compensation End,10416,16666,33332,83332,333332,
+Withholding Tax (Base),0,0,1250,5416.67,20416.67,100416.67
+Withholding Tax (Percentage),0,0.2,0.25,0.3,0.32,0.35
+Monthly,,,,,,
+Compensation Start,1,20833,33333,66667,166667,666667
+Compensation End,20832,33332,66666,166666,666666,
+Withholding Tax (Base),0,0,2500,10833.33,40833.33,200833.33
+Withholding Tax (Percentage),0,0.2,0.25,0.3,0.32,0.35
