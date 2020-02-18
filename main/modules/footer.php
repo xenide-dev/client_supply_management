@@ -1,7 +1,7 @@
 <!-- footer content -->
 <footer>
   <div class="pull-right">
-    GOVSOR-EMS by <a href="">AGeeSea</a>
+    DOTRV-SEMS 2020
   </div>
   <div class="clearfix"></div>
 </footer>

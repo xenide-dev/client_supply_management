@@ -37,7 +37,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>LGU Aroroy - Payroll Management System | Government of Sorsogon</title>
+    <title>Department of Tourism | Region V - Supply and Equipment Management System</title>
 
     <!-- Bootstrap -->
     <link href="../vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -94,7 +94,7 @@
                   <h1 style="margin-bottom: 0;"><i class="fa fa-users"></i> DEPARTMENT OF TOURISM</h1>
                   <h2>Region V</h2>
                   <h5>Supply and Equipment Management System</h5>
-                  <p>©2019 All Rights Reserved.</p>
+                  <p>©2020 All Rights Reserved.</p>
                 </div>
               </div>
             </form>
