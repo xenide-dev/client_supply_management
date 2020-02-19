@@ -8,12 +8,27 @@
 
   if(isset($_POST["update_account"])){ // For update
     $uid = $_POST["uid"];
+    $employeeid = $_POST["employeeid"];
     $fname = strtoupper($_POST["fname"]);
     $mname = strtoupper($_POST["mname"]);
+    $midinit = substr($mname, 0, 1);
     $lname = strtoupper($_POST["lname"]);
-    $priviledges = implode(",", $_POST["priviledges"]);
+    $birthdate = $_POST["birthdate"];
+    $gender = $_POST["gender"];
+    $citizenship = strtoupper($_POST["citizenship"]);
+    $religion = strtoupper($_POST["religion"]);
+    $address = strtoupper($_POST["address"]);
+    $contact_mobile = $_POST["contact_mobile"];
+    $contact_email = $_POST["contact_email"];
+    $username = $_POST["username"];
+    $user_type = $_POST["user_type"];
+    if(isset($_POST["privileges"])){
+      $privileges = implode(",", $_POST["privileges"]);
+    }else{
+      $privileges = null;
+    }
 
-    $update = DB::run("UPDATE user_accounts SET fname = ?, mname = ?, lname = ?, priviledges = ? WHERE uid = ?", [$fname, $mname, $lname, $priviledges, $uid]);
+    $update = DB::run("UPDATE user_accounts SET employeeid = ?, username = ?, fname = ?, mname = ?, lname = ?, midinit = ?, birthdate = ?, gender = ?, citizenship = ?, religion = ?, address = ?, contact_mobile = ?, contact_email = ?, user_type = ?, priviledges = ? WHERE uid = ?", [$employeeid, $username, $fname, $mname, $lname, $midinit, $birthdate, $gender, $citizenship, $religion, $address, $contact_mobile, $contact_email, $user_type, $privileges, $uid]);
 
     if($update->rowCount() > 0){
       $modify_success["update"] = true;
@@ -31,6 +46,7 @@
     }else{
       $modify_success["delete"] = false;
     }
+  
   }
 ?>
 <!DOCTYPE html>
@@ -66,6 +82,12 @@
 
     <!-- Custom Theme Style -->
     <link href="../build/css/custom.min.css" rel="stylesheet">
+
+    <style>
+      input, select {
+        margin-bottom: 10px;
+      }
+    </style>
   </head>
 
   <body class="nav-md">
@@ -106,30 +128,58 @@
                   <div class="x_content">
                     <?php
                       if(isset($_POST["submit"])){
+                        $employeeid = $_POST["employeeid"];
                         $fname = strtoupper($_POST["fname"]);
                         $mname = strtoupper($_POST["mname"]);
+                        $midinit = substr($mname, 0, 1);
                         $lname = strtoupper($_POST["lname"]);
+                        $birthdate = $_POST["birthdate"];
+                        $gender = $_POST["gender"];
+                        $citizenship = strtoupper($_POST["citizenship"]);
+                        $religion = strtoupper($_POST["religion"]);
+                        $address = strtoupper($_POST["address"]);
+                        $contact_mobile = $_POST["contact_mobile"];
+                        $contact_email = $_POST["contact_email"];
                         $username = $_POST["username"];
+                        $user_type = $_POST["user_type"];
                         $password = md5($_POST["password"]);
-                        $priviledges = implode($_POST["priviledges"], ",");
+                        $temp_pass = $_POST["password"];
+                        if(isset($_POST["privileges"])){
+                          $privileges = implode(",", $_POST["privileges"]);
+                        }else{
+                          $privileges = null;
+                        }
 
-                        $in = DB::run("INSERT INTO user_accounts(username, password, user_type, gmt_created, priviledges, fname, mname, lname) VALUES(?,?,?,?,?,?,?,?)", [$username, $password, "user", date("Y-m-d H:i:s"), $priviledges, $fname, $mname, $lname]);
-                        if($in->rowCount() > 0){
+                        // check if username already exist
+                        $c = DB::run("SELECT * FROM user_accounts WHERE username = ?", [$username]);
+                        if($c->fetch()){
                     ?>
-                    <div class="alert alert-success alert-dismissible fade in" role="alert">
-                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span>
-                      </button>
-                      <strong>Success!</strong> Data has been added
-                    </div>
+                        <div class="alert alert-danger alert-dismissible fade in" role="alert">
+                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span>
+                          </button>
+                          <strong>Failed!</strong> Employee ID already exist
+                        </div>
                     <?php
                         }else{
+                          $in = DB::run("INSERT INTO user_accounts(username, password, temp_pass, user_type, gmt_created, priviledges, employeeid, fname, mname, lname, midinit, birthdate, gender, citizenship, religion, address, contact_mobile, contact_email) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [$username, $password, $temp_pass, $user_type, date("Y-m-d H:i:s"), $privileges, $employeeid, $fname, $mname, $lname, $midinit, $birthdate, $gender, $citizenship, $religion, $address, $contact_mobile, $contact_email]);
+
+                          if($in->rowCount() > 0){
                     ?>
-                    <div class="alert alert-danger alert-dismissible fade in" role="alert">
-                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span>
-                      </button>
-                      <strong>Failed!</strong> Something's wrong
-                    </div>
+                          <div class="alert alert-success alert-dismissible fade in" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span>
+                            </button>
+                            <strong>Success!</strong> Data has been added
+                          </div>
                     <?php
+                          }else{
+                    ?>
+                          <div class="alert alert-danger alert-dismissible fade in" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span>
+                            </button>
+                            <strong>Failed!</strong> Something's wrong
+                          </div>
+                    <?php
+                          }
                         }
                       }
                     ?>
@@ -147,22 +197,49 @@
                      <table id="datatable" class="table table-striped table-bordered">
                         <thead>
                           <tr>
-                            <th>Username</th>
-                            <th>Priviledges</th>
-                            <th>Name</th>
+                            <th>Employee's Name</th>
+                            <th>Account Type</th>
+                            <th>Account Status</th>
                             <th>Last Access</th>
+                            <td>Action</td>
                           </tr>
                         </thead>
                         <tbody>
                           <?php
-                            $retrieve = DB::run("SELECT * FROM user_accounts");
+                            $retrieve = DB::run("SELECT * FROM user_accounts WHERE uid != ?",[$_SESSION["uid"]]);
                             while ($row = $retrieve->fetch()) {
                           ?>
-                          <tr onclick="<?php echo "showInfo($row[uid], '$row[fname]', '$row[mname]', '$row[lname]', '$row[priviledges]');"?>" style="cursor: pointer;" data-toggle="modal" data-target=".bs-update-modal-sm">
-                            <td><?php echo $row["username"]; ?></td>
-                            <td><?php echo $row["priviledges"]; ?></td>
-                            <td><?php echo $row["lname"] . ", " . $row["fname"]; ?></td>
-                            <td><?php echo date("Y-m-d h:i:s a", strtotime($row["gmt_last_access"])); ?></td>
+                          <tr>
+                            <td><?php echo $row["lname"] . ", " . $row["fname"] . " " . $row["midinit"] . "."; ?></td>
+                            <td><?php echo $row["user_type"]; ?></td>
+                            <td><?php echo ($row["isActive"] == 1 ? "Active" : ""); ?></td>
+                            <td>
+                              <?php 
+                                if($row["gmt_last_access"] == null){
+                                  echo "Newly created - Temp Password: " . $row["temp_pass"] ;
+                                }else{
+                                  if($row["isOnline"] == 1){
+                                    echo "Online";
+                                  }else{
+                                    echo DB::time_elapsed_string($row["gmt_last_access"]); 
+                                  }
+                                }
+                              ?>
+                            </td>
+                            <td>
+                              <button class="btn btn-primary btn-xs" onclick="editRow(<?php echo $row['uid']; ?>);" data-toggle="modal" data-target=".bs-update-modal-sm">Edit</button>
+                              <?php 
+                                if($row["isActive"]){
+                              ?>
+                              <button class="btn btn-danger btn-xs">Deactivate</button>
+                              <?php
+                                }else{
+                              ?>
+                              <button class="btn btn-success btn-xs">Activate</button>
+                              <?php
+                                }
+                              ?>
+                            </td>
                           </tr>
                           <?php
                             }
@@ -171,57 +248,86 @@
                       </table>
                       <!-- modal for update -->
                       <div class="modal fade bs-update-modal-sm" tabindex="-1" role="dialog" aria-hidden="true">
-                        <div class="modal-dialog">
+                        <div class="modal-dialog modal-lg">
                           <div class="modal-content">
 
-                            <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" enctype="multipart/form-data">
+                            <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
                               <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
                                 </button>
-                                <h4 class="modal-title" id="myModalLabel">Priviledge Update</h4>
+                                <h4 class="modal-title" id="myModalLabel">Update User's Information</h4>
                               </div>
                               <div class="modal-body">
-                                <input type="hidden" class="form-control" id="uid" name="uid">
-                                <label>First Name: </label>
-                                <input type="text" class="form-control" id="fname" name="fname" placeholder="Enter your text" required>
-                                <label>Middle Name: </label>
-                                <input type="text" class="form-control" id="mname" name="mname" placeholder="Enter your text" required>
-                                <label>Last Name: </label>
-                                <input type="text" class="form-control" id="lname" name="lname" placeholder="Enter your text" required>
-                                <br/>
-                                <label>Priviledges: </label><br/>
-                                <hr/>
-                                <label>Data Entry:</label>
-                                <div class="form-group">
-                                  <label><input type="checkbox" name="priviledges[]" id="employee" class="js-switch" value="employee" /> Employee</label><br/>
-                                  <label><input type="checkbox" name="priviledges[]" id="emp_status" class="js-switch" value="emp_status" /> Employee Status</label><br/>
-                                  <label><input type="checkbox" name="priviledges[]" id="rank" class="js-switch" value="rank" /> Rank</label><br/>
-                                  <label><input type="checkbox" name="priviledges[]" id="department" class="js-switch" value="department" /> Department</label><br/>
-                                  <label><input type="checkbox" name="priviledges[]" id="fund" class="js-switch" value="fund" /> Source of Fund</label><br/>
-                                  <label><input type="checkbox" name="priviledges[]" id="salary_grade" class="js-switch" value="salary_grade" /> Salary Grade</label><br/>
-                                  <label><input type="checkbox" name="priviledges[]" id="set_appointment" class="js-switch" value="set_appointment" /> Set Appointment</label><br/>
-                                </div>
-                                <label>Leave Management</label>
-                                <div class="form-group">
-                                  <label><input type="checkbox" name="priviledges[]" id="leave_management" class="js-switch" value="leave_management" /> Leave Management</label><br/>
-                                </div>
-                                <label>Payroll Management</label>
-                                <div class="form-group">
-                                  <label><input type="checkbox" name="priviledges[]" id="payroll" class="js-switch" value="payroll" /> Payroll</label><br/>
-                                </div>
-                                <label>Payroll Management (Settings)</label>
-                                <div class="form-group">
-                                  <label><input type="checkbox" name="priviledges[]" id="inclusion" class="js-switch" value="inclusion" /> Inclusion</label><br/>
-                                  <label><input type="checkbox" name="priviledges[]" id="deduction" class="js-switch" value="deduction" /> Deduction</label><br/>
-                                  <label><input type="checkbox" name="priviledges[]" id="withhold" class="js-switch" value="withhold" /> Withhold</label><br/>
-                                </div>
-                                <label>Account Management:</label>
-                                <div class="form-group">
-                                  <label><input type="checkbox" name="priviledges[]" id="manage_account" class="js-switch" value="manage_account" /> Manage Account</label><br/>
-                                </div>
-                                <label>Report Generation:</label>
-                                <div class="form-group">
-                                  <label><input type="checkbox" name="priviledges[]" id="reports" class="js-switch" value="reports" /> Reports</label><br/>
+                                <div class="row">
+                                  <div class="col-md-6 col-xs-12">
+                                    <input type="hidden" class="form-control" id="uid" name="uid">
+                                    <h3>Basic Information</h3>
+                                    <label>Employee ID: </label>
+                                    <input type="text" class="form-control" id="up_employeeid" name="employeeid" placeholder="Enter your text" required>
+                                    <label>First Name: </label>
+                                    <input type="text" class="form-control" id="fname" name="fname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
+                                    <label>Middle Name: </label>
+                                    <input type="text" class="form-control" id="mname" name="mname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
+                                    <label>Last Name: </label>
+                                    <input type="text" class="form-control" id="lname" name="lname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
+                                    <label>Date of Birth: </label>
+                                    <input type="date" class="form-control" id="birthdate" name="birthdate" required>
+                                    <label>Gender: </label>
+                                    <select name="gender" id="gender" class="form-control" required>
+                                      <option value="">-- Please select a value --</option>
+                                      <option value="Male">Male</option>
+                                      <option value="Female">Female</option>
+                                    </select>
+                                    <label>Citizenship: </label>
+                                    <input type="text" class="form-control" id="citizenship" name="citizenship" placeholder="Enter your text" required>
+                                    <label>Religion: </label>
+                                    <input type="text" class="form-control" id="religion" name="religion" placeholder="Enter your text" required>
+                                    <label>Address: </label>
+                                    <input type="text" class="form-control" id="address" name="address" placeholder="Enter your text" required>
+                                    <h3>Contact Information</h3>
+                                    <label>Mobile Number: </label>
+                                    <input type="text" class="form-control" id="contact_mobile" name="contact_mobile" placeholder="Enter your text" required data-inputmask="'mask': '9999 999 9999'">
+                                    <label>Email Address: </label>
+                                    <input type="email" class="form-control" id="contact_email" name="contact_email" placeholder="Enter your text" required>
+                                  </div>
+                                  <div class="col-md-6 col-xs-12">
+                                    <h3>User Credentials</h3>
+                                    <label>Username: (Same as Employee ID)</label>
+                                    <input type="text" class="form-control" name="username" id="up_username" placeholder="Enter your text" required readonly>
+                                    <label>Account Type: </label>
+                                    <select name="user_type" id="user_type" class="form-control" required>
+                                      <option value="">-- Please select a value --</option>
+                                      <option value="Administrator">Administrator</option>
+                                      <option value="Regional Director">Regional Director</option>
+                                      <option value="Inspector">Inspector</option>
+                                      <option value="User">User</option>
+                                    </select>
+                                    <h3>Privileges: </h3>
+                                    <label>Supply and Equipment:</label>
+                                    <div class="form-group">
+                                      <label><input type="checkbox" name="privileges[]" id="list_supplies" class="js-switch" value="list_supplies" /> List of Supplies</label><br/>
+                                      <label><input type="checkbox" name="privileges[]" id="list_equipment" class="js-switch" value="list_equipment" /> List of Equipments</label><br/>
+                                      <label><input type="checkbox" name="privileges[]" id="list_request" class="js-switch" value="list_request" /> List of Requests</label><br/>
+                                      <label>List of Issuances: </label><br/>
+                                      <div style="margin-left: 20px;">
+                                        <label><input type="checkbox" id="issuance_supplies" name="privileges[]" class="js-switch" value="issuance_supplies" /> Issuance of Supplies</label><br/>
+                                        <label><input type="checkbox" id="issuance_equipments" name="privileges[]" class="js-switch" value="issuance_equipments" /> Issuance of Equipments</label><br/>
+                                        <label><input type="checkbox" id="issuance_records" name="privileges[]" class="js-switch" value="issuance_records" /> Issuance Records</label><br/>
+                                      </div>
+                                    </div>
+                                    <label>Report Generation:</label>
+                                    <div class="form-group">
+                                      <label><input type="checkbox" id="reports" name="privileges[]" class="js-switch" value="reports" /> Reports</label><br/>
+                                    </div>
+                                    <label>Account Management:</label>
+                                    <div class="form-group">
+                                      <label><input type="checkbox" id="manage_account" name="privileges[]" class="js-switch" value="manage_account" /> Manage Account</label><br/>
+                                    </div>
+                                    <label>System:</label>
+                                    <div class="form-group">
+                                      <label><input type="checkbox" id="user_activities" name="privileges[]" class="js-switch" value="user_activities" /> User Activities</label><br/>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                               <div class="modal-footer">
@@ -236,12 +342,12 @@
 
                       <div>
                         <button class="btn btn-success btn-xs" data-toggle="modal" data-target=".modal_salary"><span class="fa fa-plus"></span> Add Account</button>
-                        <!-- TODOIMP: ADD ALL TRANSACTION HERE AS PRIVILEDGES -->
+                        <!-- TODOIMP: ADD ALL TRANSACTION HERE AS privileges -->
                         <div class="modal fade modal_salary" tabindex="-1" role="dialog" aria-hidden="true">
                           <div class="modal-dialog modal-lg">
                             <div class="modal-content">
 
-                              <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" enctype="multipart/form-data">
+                              <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
                                 <div class="modal-header">
                                   <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
                                   </button>
@@ -250,51 +356,78 @@
                                 <div class="modal-body">
                                   <div class="row">
                                     <div class="col-md-6 col-xs-12">
+                                      <h3>Basic Information</h3>
+                                      <label>Employee ID: </label>
+                                      <input type="text" class="form-control" name="employeeid" id="employeeid" placeholder="Enter your text" required>
                                       <label>First Name: </label>
-                                      <input type="text" class="form-control" name="fname" placeholder="Enter your text" required>
+                                      <input type="text" class="form-control" name="fname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
                                       <label>Middle Name: </label>
-                                      <input type="text" class="form-control" name="mname" placeholder="Enter your text" required>
+                                      <input type="text" class="form-control" name="mname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
                                       <label>Last Name: </label>
-                                      <input type="text" class="form-control" name="lname" placeholder="Enter your text" required>
-                                      <label>Username: </label>
-                                      <input type="text" class="form-control" name="username" placeholder="Enter the username" required>
-                                      <label>Password: </label>
-                                      <input type="password" class="form-control" name="password" placeholder="Enter the password" required>
+                                      <input type="text" class="form-control" name="lname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
+                                      <label>Date of Birth: </label>
+                                      <input type="date" class="form-control" name="birthdate" placeholder="Enter your text" required>
+                                      <label>Gender: </label>
+                                      <select name="gender" class="form-control" required>
+                                        <option value="">-- Please select a value --</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                      </select>
+                                      <label>Citizenship: </label>
+                                      <input type="text" class="form-control" name="citizenship" placeholder="Enter your text" required>
+                                      <label>Religion: </label>
+                                      <input type="text" class="form-control" name="religion" placeholder="Enter your text" required>
+                                      <label>Address: </label>
+                                      <input type="text" class="form-control" name="address" placeholder="Enter your text" required>
+                                      <h3>Contact Information</h3>
+                                      <label>Mobile No.: </label>
+                                      <input type="text" class="form-control" name="contact_mobile" placeholder="Enter your text" required data-inputmask="'mask': '9999 999 9999'">
+                                      <label>Email Address: </label>
+                                      <input type="email" class="form-control" name="contact_email" placeholder="Enter your text" required>
                                       <br/>
                                     </div>
                                     <div class="col-md-6 col-xs-12">
-                                      <h4>Priviledges: </h4><br/>
-                                      <label>Data Entry:</label>
+                                      <h3>User Credentials</h3>
+                                      <label>Username: (Same as Employee ID)</label>
+                                      <input type="text" class="form-control" name="username" id="username" placeholder="Enter your text" required readonly>
+                                      <label>Account Type: </label>
+                                      <select name="user_type" class="form-control" required>
+                                        <option value="">-- Please select a value --</option>
+                                        <option value="Administrator">Administrator</option>
+                                        <option value="Regional Director">Regional Director</option>
+                                        <option value="Inspector">Inspector</option>
+                                        <option value="User">User</option>
+                                      </select>
+                                      <label>Password: (System Generated)</label>
+                                      <?php 
+                                        $sys_gen = md5(date("Y-m-d H:i:s"));
+                                        $sys_gen = substr($sys_gen, 0, 8);
+                                      ?>
+                                      <input type="text" class="form-control" name="password" placeholder="Enter your text" readonly value="<?php echo $sys_gen; ?>">
+                                      <h3>Privileges: </h3>
+                                      <label>Supply and Equipment:</label>
                                       <div class="form-group">
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="employee" /> Employee</label><br/>
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="emp_status" /> Employee Status</label><br/>
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="rank" /> Rank</label><br/>
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="department" /> Department</label><br/>
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="fund" /> Source of Fund</label><br/>
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="salary_grade" /> Salary Grade</label><br/>
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="set_appointment" /> Set Appointment</label><br/>
-                                      </div>
-                                      <label>Leave Management:</label>
-                                      <div class="form-group">
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="leave_management" /> Leave Management</label><br/>
-                                      </div>
-                                      <label>Payroll Management:</label>
-                                      <div class="form-group">
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="payroll" /> Payroll</label><br/>
-                                      </div>
-                                      <label>Payroll Management (Settings):</label>
-                                      <div class="form-group">
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="inclusion" /> Inclusion</label><br/>
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="deduction" /> Deduction</label><br/>
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="withhold" /> Withholding Tax Table</label><br/>
-                                      </div>
-                                      <label>Account Management:</label>
-                                      <div class="form-group">
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="manage_account" /> Manage Account</label><br/>
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_supplies" /> List of Supplies</label><br/>
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_equipment" /> List of Equipments</label><br/>
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_request" /> List of Requests</label><br/>
+                                        <label>List of Issuances: </label><br/>
+                                        <div style="margin-left: 20px;">
+                                          <label><input type="checkbox" id="grp1_1" name="privileges[]" class="js-switch" value="issuance_supplies" /> Issuance of Supplies</label><br/>
+                                          <label><input type="checkbox" id="grp1_2" name="privileges[]" class="js-switch" value="issuance_equipments" /> Issuance of Equipments</label><br/>
+                                          <label><input type="checkbox" id="grp1_3" name="privileges[]" class="js-switch" value="issuance_records" /> Issuance Records</label><br/>
+                                        </div>
                                       </div>
                                       <label>Report Generation:</label>
                                       <div class="form-group">
-                                        <label><input type="checkbox" name="priviledges[]" class="js-switch" value="reports" /> Reports</label><br/>
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="reports" /> Reports</label><br/>
+                                      </div>
+                                      <label>Account Management:</label>
+                                      <div class="form-group">
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="manage_account" /> Manage Account</label><br/>
+                                      </div>
+                                      <label>System:</label>
+                                      <div class="form-group">
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="user_activities" /> User Activities</label><br/>
                                       </div>
                                       <hr/>
                                     </div>
@@ -353,120 +486,14 @@
     <script src="../vendors/pnotify/dist/pnotify.nonblock.js"></script>
     <!-- Switchery -->
     <script src="../vendors/switchery/dist/switchery.min.js"></script>
+    <!-- Parsley -->
+    <script src="../vendors/parsleyjs/dist/parsley.min.js"></script>
+    <!-- jquery.inputmask -->
+    <script src="../vendors/jquery.inputmask/dist/min/jquery.inputmask.bundle.min.js"></script>
 
     <!-- Custom Theme Scripts -->
     <script src="../build/js/custom.js"></script>
-
-
-    <script>
-      function showInfo(uid, fname, mname, lname, priviledges) {
-
-        $('#uid').val(uid);
-        $('#fname').val(fname);
-        $('#mname').val(mname);
-        $('#lname').val(lname);
-
-        var priv = priviledges;
-        if(priv.indexOf('employee') != -1){
-          setSwitchState("#employee", true);
-        }else{
-          setSwitchState("#employee", false);
-        }
-
-        if(priv.indexOf('emp_status') != -1){
-          setSwitchState("#emp_status", true);
-        }else{
-          setSwitchState("#emp_status", false);
-        }
-
-        if(priv.indexOf('rank') != -1){
-          setSwitchState("#rank", true);
-        }else{
-          setSwitchState("#rank", false);
-        }
-
-        if(priv.indexOf('department') != -1){
-          setSwitchState("#department", true);
-        }else{
-          setSwitchState("#department", false);
-        }
-
-        if(priv.indexOf('fund') != -1){
-          setSwitchState("#fund", true);
-        }else{
-          setSwitchState("#fund", false);
-        }
-
-        if(priv.indexOf('salary_grade') != -1){
-          setSwitchState("#salary_grade", true);
-        }else{
-          setSwitchState("#salary_grade", false);
-        }
-
-        if(priv.indexOf('set_appointment') != -1){
-          setSwitchState("#set_appointment", true);
-        }else{
-          setSwitchState("#set_appointment", false);
-        }
-
-        if(priv.indexOf('manage_account') != -1){
-          setSwitchState("#manage_account", true);
-        }else{
-          setSwitchState("#manage_account", false);
-        }
-
-        if(priv.indexOf('leave_management') != -1){
-          setSwitchState("#leave_management", true);
-        }else{
-          setSwitchState("#leave_management", false);
-        }
-
-        if(priv.indexOf('reports') != -1){
-          setSwitchState("#reports", true);
-        }else{
-          setSwitchState("#reports", false);
-        }
-        
-        if(priv.indexOf('payroll') != -1){
-          setSwitchState("#payroll", true);
-        }else{
-          setSwitchState("#payroll", false);
-        }
-        
-        if(priv.indexOf('inclusion') != -1){
-          setSwitchState("#inclusion", true);
-        }else{
-          setSwitchState("#inclusion", false);
-        }
-        
-        if(priv.indexOf('deduction') != -1){
-          setSwitchState("#deduction", true);
-        }else{
-          setSwitchState("#deduction", false);
-        }
-        
-        if(priv.indexOf('withhold') != -1){
-          setSwitchState("#withhold", true);
-        }else{
-          setSwitchState("#withhold", false);
-        }
-      }
-
-      function setSwitchState(id, state){
-        var clickCheckbox = document.querySelector(id);
-        if(state == true){
-          if(!clickCheckbox.checked){
-            $(id).click();
-          }
-        }else{
-          if(clickCheckbox.checked){
-            $(id).click();
-          }
-        }
-      }
-
-      $('#datatable2').dataTable();
-    </script>
+    <script src="js/custom/manage_account.js"></script>
   </body>
   <script>
   if ( window.history.replaceState ) {
