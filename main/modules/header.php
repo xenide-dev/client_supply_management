@@ -11,7 +11,7 @@
           <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
             <img src="images/user.png" alt="">
             <?php
-              echo "Hi, " . strtoupper($_SESSION["username"]);
+              echo "Hi, " . $_SESSION["user_type"];
             ?>
             <span class=" fa fa-angle-down"></span>
           </a>

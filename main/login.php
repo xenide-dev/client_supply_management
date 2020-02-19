@@ -2,6 +2,11 @@
   include "connection/connection.php";
   session_start();
 
+  if(isset($_SESSION["event"])){
+    if($_SESSION["event"] == "change_pass"){
+      header("Location: new_pass.php");
+    }
+  }
   if(isset($_SESSION["username"])){
     header("Location: index.php");
   }
@@ -14,15 +19,23 @@
     if($row = $test->fetch()){
       $_SESSION["uid"] = $row["uid"];
       $_SESSION["user_type"] = $row["user_type"];
-      $_SESSION["username"] = $row["username"];
-      $_SESSION["priviledges"] = $row["priviledges"];
-
-      DB::insertLog($row["uid"], "User Accessed", "None", "LOG-IN");
-
-      // update online status
-      DB::run("UPDATE user_accounts SET isOnline = 1 WHERE uid = ?", [$row["uid"]]);
       
-      header("Location: index.php");
+      // check if new acct
+      if($row["temp_pass"] != null){
+        $_SESSION["event"] = "change_pass";
+
+        DB::insertLog($row["uid"], "Redirect", "Redirect user to 'change password' page", "CHANGE PASS");
+        header("Location: new_pass.php");
+      }else{
+        $_SESSION["username"] = $row["username"];
+        $_SESSION["privileges"] = $row["priviledges"];
+        
+        DB::insertLog($row["uid"], "User Accessed", "None", "LOG-IN");
+        // update online status
+        DB::run("UPDATE user_accounts SET isOnline = 1 WHERE uid = ?", [$row["uid"]]);
+        
+        header("Location: index.php");
+      }
     }else{
       $error = true;
     }
@@ -103,4 +116,9 @@
       </div>
     </div>
   </body>
+  <script>
+  if ( window.history.replaceState ) {
+    window.history.replaceState( null, null, window.location.href );
+  }
+  </script>
 </html>

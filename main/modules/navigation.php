@@ -1,5 +1,5 @@
 <?php
-  $priviledges = $_SESSION["priviledges"];
+  $privileges = $_SESSION["privileges"];
 ?>
 <div class="left_col scroll-view">
   <div class="navbar nav_title" style="border: 0;">
@@ -17,7 +17,7 @@
       <span>Welcome,</span>
       <h2>
         <?php
-          echo strtoupper($_SESSION["username"]);
+          echo $_SESSION["user_type"];
         ?>
       </h2>
     </div>
@@ -38,21 +38,84 @@
     <div class="menu_section">
       <h3>Supply and Equipment</h3>
       <ul class="nav side-menu">
+        <?php
+          if(strpos($privileges, 'list_supplies') !== false){
+        ?>
         <li><a href="#.php"><i class="fa fa-list"></i> List of Supplies</a></li>
+        <?php
+          }
+        ?>
+        <?php
+          if(strpos($privileges, 'list_equipment') !== false){
+        ?>
         <li><a href="#.php"><i class="fa fa-list"></i> List of Equipments</a></li>
+        <?php
+          }
+        ?>
+        <?php
+          if(strpos($privileges, 'list_request') !== false){
+        ?>
         <li><a href="#.php"><i class="fa fa-list"></i> List of Requests</a></li>
+        <?php
+          }
+        ?>
+        <?php
+          if(strpos($privileges, 'doc_approval') !== false){
+        ?>
+        <li><a href="#.php"><i class="fa fa-list"></i> Documents for Approval</a></li>
+        <?php
+          }
+        ?>
+        <?php
+          if(strpos($privileges, 'inspection_supplies') !== false){
+        ?>
+        <li><a href="#.php"><i class="fa fa-list"></i> Inspection of Supplies</a></li>
+        <?php
+          }
+        ?>
+        <?php
+          if(strpos($privileges, 'inspection_equipment') !== false){
+        ?>
+        <li><a href="#.php"><i class="fa fa-list"></i> Inspection of Equipments</a></li>
+        <?php
+          }
+        ?>
+        <?php
+          if(strpos($privileges, 'issuance_supplies') !== false || strpos($privileges, 'issuance_equipments') !== false || strpos($privileges, 'issuance_records') !== false){
+        ?>
         <li>
           <a><i class="fa fa-list"></i> List of Issuances <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
+            <?php
+              if(strpos($privileges, 'doc_approval') !== false){
+            ?>
             <li><a href="#.php"><i class="fa fa-user"></i> Issuance of Supplies</a></li>
+            <?php
+              }
+            ?>
+            <?php
+              if(strpos($privileges, 'doc_approval') !== false){
+            ?>
             <li><a href="#.php"><i class="fa fa-user"></i> Issuance of Equipments</a></li>
+            <?php
+              }
+            ?>
+            <?php
+              if(strpos($privileges, 'doc_approval') !== false){
+            ?>
             <li><a href="#.php"><i class="fa fa-user"></i> Issuance Records</a></li>
+            <?php
+              }
+            ?>
           </ul>
         </li>
+        <?php
+          }
+        ?>
       </ul>
     </div>
     <?php
-      if(strpos($priviledges, 'reports') !== false){
+      if(strpos($privileges, 'reports') !== false){
     ?>
     <div class="menu_section">
       <h3>Report Generation</h3>
@@ -64,7 +127,7 @@
       }
     ?>
     <?php
-      if(strpos($priviledges, 'manage_account') !== false){
+      if(strpos($privileges, 'manage_account') !== false){
     ?>
     <div class="menu_section">
       <h3>Account Management</h3>
@@ -78,7 +141,13 @@
     <div class="menu_section">
       <h3>System</h3>
       <ul class="nav side-menu">
+        <?php
+          if(strpos($privileges, 'reports') !== false){
+        ?>
         <li><a href="user_activities.php"><i class="fa fa-tasks"></i> User Activities</a></li>
+        <?php
+          }
+        ?>
         <li><a href="change_password.php"><i class="fa fa-lock"></i> Change Password</a></li>
       </ul>
     </div>

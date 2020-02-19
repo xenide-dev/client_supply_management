@@ -215,7 +215,7 @@
                             <td><?php echo ($row["isActive"] == 1 ? "Active" : ""); ?></td>
                             <td>
                               <?php 
-                                if($row["gmt_last_access"] == null){
+                                if($row["gmt_last_access"] == null && $row["temp_pass"] != null){
                                   echo "Newly created - Temp Password: " . $row["temp_pass"] ;
                                 }else{
                                   if($row["isOnline"] == 1){
@@ -308,6 +308,9 @@
                                       <label><input type="checkbox" name="privileges[]" id="list_supplies" class="js-switch" value="list_supplies" /> List of Supplies</label><br/>
                                       <label><input type="checkbox" name="privileges[]" id="list_equipment" class="js-switch" value="list_equipment" /> List of Equipments</label><br/>
                                       <label><input type="checkbox" name="privileges[]" id="list_request" class="js-switch" value="list_request" /> List of Requests</label><br/>
+                                      <label><input type="checkbox" name="privileges[]" id="doc_approval" class="js-switch" value="doc_approval" /> Documents for Approval</label><br/>
+                                      <label><input type="checkbox" name="privileges[]" id="inspection_supplies" class="js-switch" value="inspection_supplies" /> Inspection of Supplies</label><br/>
+                                      <label><input type="checkbox" name="privileges[]" id="inspection_equipment" class="js-switch" value="inspection_equipment" /> Inspection of Equipments</label><br/>
                                       <label>List of Issuances: </label><br/>
                                       <div style="margin-left: 20px;">
                                         <label><input type="checkbox" id="issuance_supplies" name="privileges[]" class="js-switch" value="issuance_supplies" /> Issuance of Supplies</label><br/>
@@ -410,6 +413,9 @@
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_supplies" /> List of Supplies</label><br/>
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_equipment" /> List of Equipments</label><br/>
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_request" /> List of Requests</label><br/>
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="doc_approval" /> Documents for Approval</label><br/>
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="inspection_supplies" /> Inspection of Supplies</label><br/>
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="inspection_equipment" /> Inspection of Equipments</label><br/>
                                         <label>List of Issuances: </label><br/>
                                         <div style="margin-left: 20px;">
                                           <label><input type="checkbox" id="grp1_1" name="privileges[]" class="js-switch" value="issuance_supplies" /> Issuance of Supplies</label><br/>
