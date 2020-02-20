@@ -206,6 +206,7 @@
                         </thead>
                         <tbody>
                           <?php
+                            // $retrieve = DB::run("SELECT * FROM user_accounts");
                             $retrieve = DB::run("SELECT * FROM user_accounts WHERE uid != ?",[$_SESSION["uid"]]);
                             while ($row = $retrieve->fetch()) {
                           ?>
@@ -303,6 +304,10 @@
                                       <option value="User">User</option>
                                     </select>
                                     <h3>Privileges: </h3>
+                                    <label>Data Entry:</label>
+                                    <div class="form-group">
+                                      <label><input type="checkbox" id="item_equipment" name="privileges[]" class="js-switch" value="item_equipment" /> Item / Equipment</label><br/>
+                                    </div>
                                     <label>Supply and Equipment:</label>
                                     <div class="form-group">
                                       <label><input type="checkbox" name="privileges[]" id="list_supplies" class="js-switch" value="list_supplies" /> List of Supplies</label><br/>
@@ -408,6 +413,10 @@
                                       ?>
                                       <input type="text" class="form-control" name="password" placeholder="Enter your text" readonly value="<?php echo $sys_gen; ?>">
                                       <h3>Privileges: </h3>
+                                      <label>Data Entry:</label>
+                                      <div class="form-group">
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="item_equipment" /> Item / Equipment</label><br/>
+                                      </div>
                                       <label>Supply and Equipment:</label>
                                       <div class="form-group">
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_supplies" /> List of Supplies</label><br/>

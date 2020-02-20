@@ -31,7 +31,11 @@
             // update online status
             DB::run("UPDATE user_accounts SET isOnline = 1 WHERE uid = ?", [$row["uid"]]);
             
-            header("Location: index.php");
+            if($_SESSION["user_type"] == "User"){
+              header("Location: user_section/index.php");
+            }else{
+              header("Location: index.php");
+            }
         }
     }else{
         $error["pass"] = true;

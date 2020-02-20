@@ -85,5 +85,15 @@
 			if (!$full) $string = array_slice($string, 0, 1);
 			return $string ? implode(', ', $string) . ' ago' : 'Just Now';
 		}
+		public static function getCurrentDateTime(){
+			return date("Y-m-d H:i:s");
+		}
+		public static function formatDateTime($datetime, $isTimeIncluded = false){
+			if(!$isTimeIncluded){
+				return date("Y-m-d", strtotime($datetime));
+			}else{
+				return date("Y-m-d H:i:s", strtotime($datetime));
+			}
+		}
 	}
 ?>
