@@ -19,7 +19,7 @@
                     <a href="#" class="nav-link">Supplies</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">My Requests</a>
+                    <a href="my_request.php" class="nav-link">My Requests</a>
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">My Equipment</a>

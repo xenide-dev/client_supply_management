@@ -74,7 +74,7 @@
         <?php
           if(strpos($privileges, 'doc_approval') !== false){
         ?>
-        <li><a href="#.php"><i class="fa fa-legal"></i> Documents for Approval</a></li>
+        <li><a href="documents_approval.php"><i class="fa fa-legal"></i> Documents for Approval</a></li>
         <?php
           }
         ?>

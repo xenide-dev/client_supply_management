@@ -57,6 +57,15 @@
 				return false;
 			}
 		}
+
+		public static function insertTraceEntry($tracer_no, $rid, $source_uid, $destination_uid_type, $destination_uid, $status, $remarks){
+			$i = self::run("INSERT INTO request_tracer(tracer_no, rid, source_uid, destination_uid_type, destination_uid, status, remarks) VALUES(?, ?, ?, ?, ?, ?, ?)", [$tracer_no, $rid, $source_uid, $destination_uid_type, $destination_uid, $status, $remarks]);
+			if($i->rowCount() > 0){
+				return true;
+			}else{
+				return false;
+			}
+		}
 		public static function time_elapsed_string($datetime, $full = false) {
 			$now = new DateTime;
 			$ago = new DateTime($datetime);

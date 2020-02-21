@@ -1,3 +1,11 @@
+<?php
+  include "../connection/connection.php";
+  session_start();
+
+  if(!isset($_SESSION["username"])){
+    header("Location: ../login.php");
+  }
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -11,8 +19,6 @@
         <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
         <!-- Theme style -->
         <link rel="stylesheet" href="dist/css/adminlte.min.css">
-        <!-- Google Font: Source Sans Pro -->
-        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
     </head>
     <body class="hold-transition layout-top-nav">
         <div class="wrapper">
