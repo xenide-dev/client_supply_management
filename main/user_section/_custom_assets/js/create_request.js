@@ -2,13 +2,15 @@ var count = 1;
 var idCount = 1;
 $(document).ready(function(){
     init_parsley();
-    $("#btnAddItem").on('click', function(){
+    $("#btnAddItem, #btnAddItemPurchase").on('click', function(){
+        var requestType = (this.id == "btnAddItemPurchase") ? 'purchase' : 'requisition';
         $.ajax({
             method: 'POST',
             url: '_modules/asyncUrls/create_request.php',
             dataType: 'JSON',
             data: {
                 type: 'item',
+                requestType: requestType,
                 operation: 'getAll'
             },
             success: function(data){
@@ -33,23 +35,7 @@ $(document).ready(function(){
                                 </div>
                                 <div class="col-md-2">
                                     <label>Unit:</label>
-                                    <select class="form-control item_unit" name="requested_unit[]" required>
-                                        <option value="">-- Please select a value --</option>
-                                        <option value="Piece">Piece</option>
-                                        <option value="Ream">Ream</option>
-                                        <option value="Yard">Yard</option>
-                                        <option value="Dozen">Dozen</option>
-                                        <option value="Set">Set</option>
-                                        <option value="Meter">Meter</option>
-                                        <option value="Millimeter">Millimeter</option>
-                                        <option value="Centimeter">Centimeter</option>
-                                        <option value="Sack">Sack</option>
-                                        <option value="Box">Box</option>
-                                        <option value="Can">Can</option>
-                                        <option value="Bottle">Bottle</option>
-                                        <option value="Glass">Glass</option>
-                                        <option value="Pair">Pair</option>
-                                    </select>
+                                    <input type="text" placeholder="Please select an item/equipment" name="requested_unit[]" class="form-control item_unit" readonly>
                                 </div>
                                 <div class="col-md-2">
                                     <label>Type:</label>

@@ -28,6 +28,7 @@
                     <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Create Request</a>
                     <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu border-0 shadow">
                         <li><a href="create_request.php" class="dropdown-item">Create Supply/Equipment Request</a></li>
+                        <li><a href="create_purchase_request.php" class="dropdown-item">Create Purchase Request</a></li>
                         <li><a href="#" class="dropdown-item">Create PPMP</a></li>
                     </ul>
                 </li>

@@ -74,7 +74,7 @@
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2>Purchase Order</h2>
+                    <h2>Purchase Request</h2>
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
@@ -138,7 +138,7 @@
                     <div id="loading-circle"></div>
                   </div>
                   <div class="x_title">
-                    <h2>List of Supplies</h2>
+                    <h2>List of Requests</h2>
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">

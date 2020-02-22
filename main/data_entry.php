@@ -37,6 +37,7 @@
 
     <!-- Custom Theme Style -->
     <link href="../build/css/custom.min.css" rel="stylesheet">
+    <link href="css/custom/custom_loading.css" rel="stylesheet">
   </head>
 
   <body class="nav-md">
@@ -65,8 +66,304 @@
 
 
             <div class="row">
-                <!-- Category -->
-              <div class="col-md-4 col-sm-12 col-xs-12">
+              <!-- Item -->
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                  <div id="loading_modal">
+                    <div id="loading-circle"></div>
+                  </div>
+                  <div class="x_title">
+                    <h2>List of Item / Equipment</h2>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <?php
+                      if(isset($_POST["submit_item"])){
+                        $catid = $_POST["catid"];
+                        $item_code = strtoupper($_POST["item_code"]);
+                        $item_name = strtoupper($_POST["item_name"]);
+                        $item_descrip = strtolower($_POST["item_descrip"]);
+                        $item_default_unit = $_POST["item_default_unit"];
+                        $item_type = $_POST["item_type"];
+
+                        $i = DB::run("INSERT INTO item_dictionary(catid, item_code, item_name, item_description, item_default_unit, item_type) VALUES(?, ?, ?, ?, ?, ?)", [$catid, $item_code, $item_name, $item_descrip, $item_default_unit, $item_type]);
+
+                        if($i->rowCount() > 0){
+                    ?>
+                    <div class="alert alert-success">
+                        <strong>Success!</strong> Item has been added
+                    </div>
+                    <?php
+                        }
+                      }
+
+                      if(isset($_POST["update_item"])){
+                        $itemid = $_POST["itemid"];
+                        $catid = $_POST["catid"];
+                        $item_code = strtoupper($_POST["item_code"]);
+                        $item_name = strtoupper($_POST["item_name"]);
+                        $item_descrip = strtolower($_POST["item_descrip"]);
+                        $item_default_unit = $_POST["item_default_unit"];
+                        $item_type = $_POST["item_type"];
+
+                        $u = DB::run("UPDATE item_dictionary SET catid = ?, item_code = ?, item_name = ?, item_description = ?, item_default_unit = ?, item_type = ? WHERE itemid = ?", [$catid, $item_code, $item_name, $item_descrip, $item_default_unit, $item_type, $itemid]);
+                        if($u->rowCount() > 0){
+                    ?>
+                    <div class="alert alert-success">
+                      <strong>Success!</strong> Item has been updated
+                    </div>
+                    <?php
+                        }
+                      }
+
+                      if(isset($_POST["submitItemCSV"])){
+                        $flag = false;
+                        foreach ($_POST["item_rows"] as $key => $value) {
+                          $value = explode(',', $value);
+                          $cat_name = strtoupper(trim($value[0]));
+                          $item_code = strtoupper(trim($value[1]));
+                          $item_unit = ucfirst(trim($value[2]));
+
+                          // check if category exist
+                          $c = DB::run("SELECT * FROM item_category WHERE cat_name = ?", [$cat_name]);
+                          if($crow = $c->fetch()){
+                            $catid = $crow["catid"];
+                          }else{
+                            DB::run("INSERT INTO item_category(cat_name) VALUES(?)", [$cat_name]);
+                            $catid = DB::getLastInsertedID();
+                          }
+
+                          // check if unit of measure exist (for records only)
+                          $u = DB::run("SELECT count(*) as total FROM units_measure WHERE unit_name = ?", [$item_unit]);
+                          $ur = $u->fetch();
+                          if($ur["total"] == 0 ){
+                            DB::run("INSERT INTO units_measure(unit_name) VALUES(?)", [$item_unit]);
+                          }
+
+                          // process item description
+                          $temp = array_slice($value, 3);
+                          $allUp = [];
+                          $rem = [];
+                          for ($i=0; $i < count($temp); $i++) {
+                            $val = trim($temp[$i]);
+                            if(ctype_upper($val[0])){
+                              array_push($allUp, $val);
+                            }else{
+                              array_push($rem, $val);
+                            }
+                          }
+
+                          $item_name = implode(",", $allUp);
+                          $item_descrip = implode(",", $rem);
+
+                          // check if item already exist based on item code
+                          $i = DB::run("SELECT * FROM item_dictionary WHERE item_code = ?", [$item_code]);
+                          if($ir = $i->fetch()){
+                            // update
+                          }else{
+                            // insert as new
+                            $a = DB::run("INSERT INTO item_dictionary(catid, item_code, item_name, item_description, item_default_unit) VALUES(?, ?, ?, ?, ?)", [$catid, $item_code, $item_name, $item_descrip, $item_unit]);
+                            if($a->rowCount() > 0){
+                              $flag = true;
+                            }
+                          }
+
+                        }
+
+                        if($flag){
+                    ?>
+                    <div class="alert alert-success">
+                      <strong>Success!</strong> Data has been uploaded
+                    </div>
+                    <?php
+                        }
+                      }
+                    ?>
+                     <table id="dtItem" class="table table-striped table-bordered">
+                        <thead>
+                          <tr>
+                            <th>Category</th>
+                            <th>Item Code</th>
+                            <th>Item/Equipment's Name</th>
+                            <th>Item Description</th>
+                            <th>Default Unit</th>
+                            <th>Item Type</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
+                      <div class="modal fade bs-update-modal-sm" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+
+                            <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
+                              <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
+                                </button>
+                                <h4 class="modal-title" id="myModalLabel">Update Item/Equipment</h4>
+                              </div>
+                              <div class="modal-body">
+                                <input type="text" name="itemid" id="itemid" style="display: none;">
+                                <label>Category: <span class="text-danger">*</span></label>
+                                <select name="catid" class="form-control cat_select" id="up_catid" required>
+                                  <option value="">-- Please select a value --</option>
+                                  <?php
+                                      $cat = DB::run("SELECT * FROM item_category ORDER BY cat_name ASC");
+                                      while($catrow = $cat->fetch()){
+                                  ?>
+                                  <option value="<?php echo $catrow['catid']; ?>"><?php echo $catrow['cat_name']; ?></option>
+                                  <?php
+                                      }
+                                  ?>
+                                </select>
+                                <br/>
+                                <label>Item Code: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="item_code" name="item_code" placeholder="Enter your text ..." required>
+                                <br/>
+                                <label>Item/Equipment's Name: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="item_name" name="item_name" placeholder="Enter your text ..." required>
+                                <br/>
+                                <label>Item Description: </label>
+                                <input type="text" class="form-control" id="item_descrip" name="item_descrip" placeholder="Enter your text ...">
+                                <br/>
+                                <label>Item Default Unit: <span class="text-danger">*</span></label>
+                                <select name="item_default_unit" id="item_default_unit" class="form-control" required>
+                                    <option value="">-- Please select a value --</option>
+                                    <?php
+                                      $u = DB::run("SELECT * FROM units_measure ORDER BY unit_name ASC");
+                                      while($urow = $u->fetch()){
+                                    ?>
+                                    <option value="<?php echo $urow['unit_name']; ?>"><?php echo $urow['unit_name']; ?></option>
+                                    <?php
+                                      }
+                                    ?>
+                                </select>
+                                <br/>
+                                <label>Item Type: <span class="text-danger">*</span></label>
+                                <select name="item_type" id="item_type" class="form-control" required>
+                                    <option value="">-- Please select a value --</option>
+                                    <option value="Consumable">Consumable</option>
+                                    <option value="Non-Consumable">Non-Consumable</option>
+                                </select>
+                                <br/>
+                              </div>
+                              <div class="modal-footer">
+                                <input type="submit" name="update_item" value="Save Changes" class="btn btn-success">
+                              </div>
+                            </form>
+
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <button class="btn btn-success btn-xs" data-toggle="modal" data-target=".bs-example-modal-sm" id="btnAddItem"><span class="fa fa-plus"></span> Add Item</button>
+                        <button class="btn btn-success btn-xs" data-toggle="modal" data-target=".bs-item-csv" id="btnAddItem"><span class="fa fa-upload"></span> Upload CSV</button>
+
+                        <!-- for add modal -->
+                        <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-hidden="true">
+                          <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+
+                              <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
+                                <div class="modal-header">
+                                  <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
+                                  </button>
+                                  <h4 class="modal-title" id="myModalLabel">Add Item</h4>
+                                </div>
+                                <div class="modal-body">
+                                  <label>Category: <span class="text-danger">*</span></label>
+                                  <select name="catid" class="form-control cat_select" required>
+                                    <option value="">-- Please select a value --</option>
+                                    <?php
+                                        $cat = DB::run("SELECT * FROM item_category ORDER BY cat_name ASC");
+                                        while($catrow = $cat->fetch()){
+                                    ?>
+                                    <option value="<?php echo $catrow['catid']; ?>"><?php echo $catrow['cat_name']; ?></option>
+                                    <?php
+                                        }
+                                    ?>
+                                  </select>
+                                  <br/>
+                                  <label>Item Code: <span class="text-danger">*</span></label>
+                                  <input type="text" class="form-control" name="item_code" placeholder="Enter your text ..." required>
+                                  <br/>
+                                  <label>Item/Equipment's Name: <span class="text-danger">*</span></label>
+                                  <input type="text" class="form-control" name="item_name" placeholder="Enter your text ..." required>
+                                  <br/>
+                                  <label>Item Description: </label>
+                                  <input type="text" class="form-control" name="item_descrip" placeholder="Enter your text ...">
+                                  <br/>
+                                  <label>Item Default Unit: <span class="text-danger">*</span></label>
+                                  <select name="item_default_unit" class="form-control" required>
+                                      <option value="">-- Please select a value --</option>
+                                      <?php
+                                        $u = DB::run("SELECT * FROM units_measure ORDER BY unit_name ASC");
+                                        while($urow = $u->fetch()){
+                                      ?>
+                                      <option value="<?php echo $urow['unit_name']; ?>"><?php echo $urow['unit_name']; ?></option>
+                                      <?php
+                                        }
+                                      ?>
+                                  </select>
+                                  <br/>
+                                  <label>Item Type: <span class="text-danger">*</span></label>
+                                  <select name="item_type" class="form-control" required>
+                                      <option value="">-- Please select a value --</option>
+                                      <option value="Consumable">Consumable</option>
+                                      <option value="Non-Consumable">Non-Consumable</option>
+                                  </select>
+                                  <br/>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="submit" name="submit_item" class="btn btn-primary">Save changes</button>
+                                </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- for upload csv -->
+                        <div class="modal fade bs-item-csv" tabindex="-1" role="dialog" aria-hidden="true">
+                          <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+
+                              <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" enctype="multipart/form-data">
+                                <div class="modal-header">
+                                  <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
+                                  </button>
+                                  <h4 class="modal-title" id="myModalLabel">Upload CSV File</h4>
+                                </div>
+                                <div class="modal-body">
+                                  <div class="alert alert-warning">
+                                      <b>Note! Your CSV File content should be in a format (Category, Item Code, Unit of Measure, Item Name, Item Description)</b> <br/>
+                                      <strong>For Item Name, the text should be in a upper case (or at least the first letter should be in a upper case).</strong> <br/>
+                                      <strong>For Item Description, all characters should be in a lower case.</strong><br/>
+                                      <strong>You can get the format <a href="template/common_items.csv">here.</a></strong>
+                                  </div>
+                                  <label>Select File: </label>
+                                  <input type="file" class="form-control" name="upload_csv" accept=".csv" id="upload_csv">
+                                  <br/>
+                                  <label>File Content</label>
+                                  <small>Uncheck the row if you don't want to include</small>
+                                  <div id="rows_container"></div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="submit" name="submitItemCSV" class="btn btn-primary">Save changes</button>
+                                </div>
+                              </form>
+
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Category -->
+              <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="x_panel">
                   <div class="x_title">
                     <h2>Category List</h2>
@@ -193,221 +490,6 @@
                                 </div>
                               </form>
 
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Item -->
-              <div class="col-md-8 col-sm-12 col-xs-12">
-                <div class="x_panel">
-                  <div class="x_title">
-                    <h2>List of Item / Equipment</h2>
-                    <div class="clearfix"></div>
-                  </div>
-                  <div class="x_content">
-                    <?php
-                      if(isset($_POST["submit_item"])){
-                        $catid = $_POST["catid"];
-                        $item_name = strtoupper($_POST["item_name"]);
-                        $item_descrip = strtoupper($_POST["item_descrip"]);
-                        $item_default_unit = $_POST["item_default_unit"];
-                        $item_type = $_POST["item_type"];
-
-                        $i = DB::run("INSERT INTO item_dictionary(catid, item_name, item_description, item_default_unit, item_type) VALUES(?, ?, ?, ?, ?)", [$catid, $item_name, $item_descrip, $item_default_unit, $item_type]);
-
-                        if($i->rowCount() > 0){
-                    ?>
-                    <div class="alert alert-success">
-                        <strong>Success!</strong> Item has been added
-                    </div>
-                    <?php
-                        }
-                      }
-
-                      if(isset($_POST["update_item"])){
-                        $itemid = $_POST["itemid"];
-                        $catid = $_POST["catid"];
-                        $item_name = strtoupper($_POST["item_name"]);
-                        $item_descrip = strtoupper($_POST["item_descrip"]);
-                        $item_default_unit = $_POST["item_default_unit"];
-                        $item_type = $_POST["item_type"];
-
-                        $u = DB::run("UPDATE item_dictionary SET catid = ?, item_name = ?, item_description = ?, item_default_unit = ?, item_type = ? WHERE itemid = ?", [$catid, $item_name, $item_descrip, $item_default_unit, $item_type, $itemid]);
-                        if($u->rowCount() > 0){
-                    ?>
-                    <div class="alert alert-success">
-                      <strong>Success!</strong> Item has been updated
-                    </div>
-                    <?php
-                        }
-                      }
-                    ?>
-                     <table id="dtItem" class="table table-striped table-bordered">
-                        <thead>
-                          <tr>
-                            <th>Item/Equipment's Name</th>
-                            <th>Category</th>
-                            <th>Item Description</th>
-                            <th>Default Unit</th>
-                            <th>Item Type</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <?php
-                            $retrieve = DB::run("SELECT * FROM item_dictionary id LEFT JOIN item_category ic ON id.catid = ic.catid ORDER BY id.item_name ASC");
-                            while ($row = $retrieve->fetch()) {
-                          ?>
-                          <tr>
-                            <td><?php echo $row["item_name"]; ?></td>
-                            <td><?php echo $row["cat_name"]; ?></td>
-                            <td><?php echo $row["item_description"]; ?></td>
-                            <td><?php echo $row["item_default_unit"]; ?></td>
-                            <td><?php echo $row["item_type"]; ?></td>
-                            <td>
-                              <a href="#" class="btn btn-success btn-xs" onclick="loadData(<?php echo $row['itemid']; ?>, 'item')" data-toggle="modal" data-target=".bs-update-modal-sm"><span class="fa fa-edit"></span> Edit</a>
-                              <a href="#" class="btn btn-danger btn-xs" onclick="removeData(<?php echo $row['itemid']; ?>, 'item', this)"><span class="fa fa-trash"></span></a>
-                            </td>
-                          </tr>
-                          <?php
-                            }
-                          ?>
-                        </tbody>
-                      </table>
-                      <div class="modal fade bs-update-modal-sm" tabindex="-1" role="dialog" aria-hidden="true">
-                        <div class="modal-dialog">
-                          <div class="modal-content">
-
-                            <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
-                              <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
-                                </button>
-                                <h4 class="modal-title" id="myModalLabel">Update Item/Equipment</h4>
-                              </div>
-                              <div class="modal-body">
-                                <input type="text" name="itemid" id="itemid" style="display: none;">
-                                <label>Category: <span class="text-danger">*</span></label>
-                                <select name="catid" class="form-control cat_select" id="up_catid" required>
-                                  <option value="">-- Please select a value --</option>
-                                  <?php
-                                      $cat = DB::run("SELECT * FROM item_category ORDER BY cat_name ASC");
-                                      while($catrow = $cat->fetch()){
-                                  ?>
-                                  <option value="<?php echo $catrow['catid']; ?>"><?php echo $catrow['cat_name']; ?></option>
-                                  <?php
-                                      }
-                                  ?>
-                                </select>
-                                <br/>
-                                <label>Item/Equipment's Name: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="item_name" name="item_name" placeholder="Enter your text ..." required>
-                                <br/>
-                                <label>Item Description: </label>
-                                <input type="text" class="form-control" id="item_descrip" name="item_descrip" placeholder="Enter your text ...">
-                                <br/>
-                                <label>Item Default Unit: <span class="text-danger">*</span></label>
-                                <select name="item_default_unit" id="item_default_unit" class="form-control" required>
-                                    <option value="">-- Please select a value --</option>
-                                    <option value="Piece">Piece</option>
-                                    <option value="Ream">Ream</option>
-                                    <option value="Yard">Yard</option>
-                                    <option value="Dozen">Dozen</option>
-                                    <option value="Set">Set</option>
-                                    <option value="Meter">Meter</option>
-                                    <option value="Millimeter">Millimeter</option>
-                                    <option value="Centimeter">Centimeter</option>
-                                    <option value="Sack">Sack</option>
-                                    <option value="Box">Box</option>
-                                    <option value="Can">Can</option>
-                                    <option value="Bottle">Bottle</option>
-                                    <option value="Glass">Glass</option>
-                                    <option value="Pair">Pair</option>
-                                </select>
-                                <br/>
-                                <label>Item Type: <span class="text-danger">*</span></label>
-                                <select name="item_type" id="item_type" class="form-control" required>
-                                    <option value="">-- Please select a value --</option>
-                                    <option value="Consumable">Consumable</option>
-                                    <option value="Non-Consumable">Non-Consumable</option>
-                                </select>
-                                <br/>
-                              </div>
-                              <div class="modal-footer">
-                                <input type="submit" name="update_item" value="Save Changes" class="btn btn-success">
-                              </div>
-                            </form>
-
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <button class="btn btn-success btn-xs" data-toggle="modal" data-target=".bs-example-modal-sm" id="btnAddItem"><span class="fa fa-plus"></span> Add Item</button>
-
-                        <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-hidden="true">
-                          <div class="modal-dialog modal-sm">
-                            <div class="modal-content">
-
-                              <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
-                                <div class="modal-header">
-                                  <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
-                                  </button>
-                                  <h4 class="modal-title" id="myModalLabel">Add Item</h4>
-                                </div>
-                                <div class="modal-body">
-                                  <label>Category: <span class="text-danger">*</span></label>
-                                  <select name="catid" class="form-control cat_select" required>
-                                    <option value="">-- Please select a value --</option>
-                                    <?php
-                                        $cat = DB::run("SELECT * FROM item_category ORDER BY cat_name ASC");
-                                        while($catrow = $cat->fetch()){
-                                    ?>
-                                    <option value="<?php echo $catrow['catid']; ?>"><?php echo $catrow['cat_name']; ?></option>
-                                    <?php
-                                        }
-                                    ?>
-                                  </select>
-                                  <br/>
-                                  <label>Item/Equipment's Name: <span class="text-danger">*</span></label>
-                                  <input type="text" class="form-control" name="item_name" placeholder="Enter your text ..." required>
-                                  <br/>
-                                  <label>Item Description: </label>
-                                  <input type="text" class="form-control" name="item_descrip" placeholder="Enter your text ...">
-                                  <br/>
-                                  <label>Item Default Unit: <span class="text-danger">*</span></label>
-                                  <select name="item_default_unit" class="form-control" required>
-                                      <option value="">-- Please select a value --</option>
-                                      <option value="Piece">Piece</option>
-                                      <option value="Ream">Ream</option>
-                                      <option value="Yard">Yard</option>
-                                      <option value="Dozen">Dozen</option>
-                                      <option value="Set">Set</option>
-                                      <option value="Meter">Meter</option>
-                                      <option value="Millimeter">Millimeter</option>
-                                      <option value="Centimeter">Centimeter</option>
-                                      <option value="Sack">Sack</option>
-                                      <option value="Box">Box</option>
-                                      <option value="Can">Can</option>
-                                      <option value="Bottle">Bottle</option>
-                                      <option value="Glass">Glass</option>
-                                      <option value="Pair">Pair</option>
-                                  </select>
-                                  <br/>
-                                  <label>Item Type: <span class="text-danger">*</span></label>
-                                  <select name="item_type" class="form-control" required>
-                                      <option value="">-- Please select a value --</option>
-                                      <option value="Consumable">Consumable</option>
-                                      <option value="Non-Consumable">Non-Consumable</option>
-                                  </select>
-                                  <br/>
-                                </div>
-                                <div class="modal-footer">
-                                  <button type="submit" name="submit_item" class="btn btn-primary">Save changes</button>
-                                </div>
-                              </form>
                             </div>
                           </div>
                         </div>

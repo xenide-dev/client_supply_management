@@ -51,6 +51,13 @@
       <h3>Supply and Equipment</h3>
       <ul class="nav side-menu">
         <?php
+          if(strpos($privileges, 'purchase_order') !== false){
+        ?>
+        <li><a href="manage_purchase_orders.php"><i class="fa fa-list"></i> Manage Purchase Orders</a></li>
+        <?php
+          }
+        ?>
+        <?php
           if(strpos($privileges, 'list_supplies') !== false){
         ?>
         <li><a href="list_supplies.php"><i class="fa fa-list"></i> List of Supplies</a></li>
@@ -60,14 +67,14 @@
         <?php
           if(strpos($privileges, 'list_equipment') !== false){
         ?>
-        <li><a href="#.php"><i class="fa fa-list"></i> List of Equipments</a></li>
+        <li><a href="#"><i class="fa fa-list"></i> List of Equipments</a></li>
         <?php
           }
         ?>
         <?php
           if(strpos($privileges, 'list_request') !== false){
         ?>
-        <li><a href="#.php"><i class="fa fa-list"></i> List of Requests</a></li>
+        <li><a href="list_requests.php"><i class="fa fa-list"></i> List of Requests</a></li>
         <?php
           }
         ?>
@@ -81,14 +88,14 @@
         <?php
           if(strpos($privileges, 'inspection_supplies') !== false){
         ?>
-        <li><a href="#.php"><i class="fa fa-search"></i> Inspection of Supplies</a></li>
+        <li><a href="#"><i class="fa fa-search"></i> Inspection of Supplies</a></li>
         <?php
           }
         ?>
         <?php
           if(strpos($privileges, 'inspection_equipment') !== false){
         ?>
-        <li><a href="#.php"><i class="fa fa-search"></i> Inspection of Equipments</a></li>
+        <li><a href="#"><i class="fa fa-search"></i> Inspection of Equipments</a></li>
         <?php
           }
         ?>
@@ -101,21 +108,21 @@
             <?php
               if(strpos($privileges, 'doc_approval') !== false){
             ?>
-            <li><a href="#.php"><i class="fa fa-truck"></i> Issuance of Supplies</a></li>
+            <li><a href="#"><i class="fa fa-truck"></i> Issuance of Supplies</a></li>
             <?php
               }
             ?>
             <?php
               if(strpos($privileges, 'doc_approval') !== false){
             ?>
-            <li><a href="#.php"><i class="fa fa-suitcase"></i> Issuance of Equipments</a></li>
+            <li><a href="#"><i class="fa fa-suitcase"></i> Issuance of Equipments</a></li>
             <?php
               }
             ?>
             <?php
               if(strpos($privileges, 'doc_approval') !== false){
             ?>
-            <li><a href="#.php"><i class="fa fa-user"></i> Issuance Records</a></li>
+            <li><a href="#"><i class="fa fa-user"></i> Issuance Records</a></li>
             <?php
               }
             ?>
@@ -130,9 +137,9 @@
       if(strpos($privileges, 'reports') !== false){
     ?>
     <div class="menu_section">
-      <h3>Report Generation</h3>
+      <h3>Report Management</h3>
       <ul class="nav side-menu">
-        <li><a href="#.php"><i class="fa fa-line-chart"></i> Reports</a></li> 
+        <li><a href="#"><i class="fa fa-line-chart"></i> Reports</a></li> 
       </ul>
     </div>
     <?php
