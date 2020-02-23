@@ -70,8 +70,10 @@
                 // update the previous trace
                 DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, $status, $tid]);
 
-                // create another trace entry
-                DB::run("INSERT request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'Administrator', $status]);
+                if($action == "Approved"){
+                    // create another trace entry
+                    DB::run("INSERT request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'Administrator', $status]);
+                }
 
                 $output["msg"] = true;
             }

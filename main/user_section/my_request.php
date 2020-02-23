@@ -89,7 +89,7 @@
                                                 }elseif($srow["status"] == "Approved"){
                                                     $status = '<span class="badge bg-success">Approved</span>';
                                                 }elseif($srow["status"] == "Disapproved"){
-                                                    $status = '<span class="badge bg-success">Disapproved</span>';
+                                                    $status = '<span class="badge bg-danger">Disapproved</span>';
                                                 }elseif($srow["status"] == "Delivered"){
                                                     $status = '<span class="badge bg-success">Delivered</span>';
                                                 }elseif($srow["status"] == "Pending Items"){
@@ -172,7 +172,7 @@
                                                         }elseif($lrow["status"] == "Approved"){
                                                             $status = '<span class="badge bg-success">Approved</span>';
                                                         }elseif($lrow["status"] == "Disapproved"){
-                                                            $status = '<span class="badge bg-success">Disapproved</span>';
+                                                            $status = '<span class="badge bg-danger">Disapproved</span>';
                                                         }elseif($lrow["status"] == "Delivered"){
                                                             $status = '<span class="badge bg-success">Delivered</span>';
                                                         }elseif($lrow["status"] == "Pending Items"){

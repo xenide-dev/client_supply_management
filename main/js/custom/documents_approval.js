@@ -67,7 +67,7 @@ function processAction(tid, rid, uid, action, tracer_no, request_type, ref){
                         }
                         $("#dtList").dataTable().fnUpdate(temp,$(ref).parents('tr'),undefined,false);
                         $(".row_" + tid).remove();
-                        swal("Success!", "Request has been approved!", "success");
+                        swal("Success!", "Request has been '" + action + "'", "success");
                     }
                 }
             });
