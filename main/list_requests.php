@@ -67,61 +67,162 @@
 
             <div class="row">
               <?php
-                if(isset($_GET["type"])){
-                  if($_GET["type"] == "make_order"){
+                if(isset($_GET["type"]) && isset($_GET["rid"])){
+                  if($_GET["type"] == "make_order" && $_GET["rid"] != ""){
+                    if(isset($_POST["po_number"])){
+
+                      // check if purchase order number already exist
+                      $c = DB::run("SELECT * FROM purchase_order WHERE po_number = ?", [$_POST["po_number"]]);
+                      if($crow = $c->fetch()){
+              ?>
+              <div class="alert alert-danger">
+                <strong>Error!</strong> Purchase Order Number already exist! <a href="<?php echo $_SERVER["REQUEST_URI"]?>">Go back</a>
+              </div>
+              <?php
+                      }else{
+                        $po_number = strtoupper($_POST["po_number"]);
+                        $supplier_name = strtoupper($_POST["supplier_name"]);
+                        $supplier_address = strtoupper($_POST["supplier_address"]);
+                        $riid = $_POST["riid"];
+                        $unit_cost = $_POST["unit_cost"];
+                        $total_cost = $_POST["total_cost"];
+                        $total_amount = 0;
+
+                        for ($i=0; $i < count($unit_cost); $i++) { 
+                          $total_amount += $total_cost[$i];
+                        }
+
+                        // insert to main table
+                        $i = DB::run("INSERT INTO purchase_order(rid, po_number, supplier_name, supplier_address, total_amount, created_at) VALUES(?, ?, ?, ?, ?, ?)", [$_GET["rid"], $po_number, $supplier_name, $supplier_address, $total_amount , DB::getCurrentDateTime()]);
+                        $poid = DB::getLastInsertedID();
+
+                        // insert to sub table
+                        $f = false;
+                        for ($i=0; $i < count($unit_cost); $i++) { 
+                          $ii = DB::run("INSERT INTO purchase_order_items(poid, riid, unit_cost, total_cost) VALUES(?, ?, ?, ?)", [$poid, $riid[$i], $unit_cost[$i], $total_cost[$i]]);
+                          if($ii->rowCount() > 0){
+                            $f = true;
+                          }
+                        }
+
+                        if($f){
+              ?>
+              <div class="alert alert-success">
+                <strong>Success!</strong> Your purchase order has been submitted. Thank you! <a href="list_requests.php">Go back</a>
+              </div>
+              <?php
+                        }
+
+
+                        // update request to processing
+                        DB::run("UPDATE request SET status = 'Processing', updated_at = ? WHERE rid = ?", [DB::getCurrentDateTime(), $_GET["rid"]]);
+
+                        // get last trace
+                        $l = DB::run("SELECT * FROM request_tracer WHERE rid = ? AND destination_uid_type = 'Administrator' AND destination_uid IS NULL ORDER BY tracer_no DESC", [$_GET["rid"]]);
+                        $lrow = $l->fetch();
+
+                        // update last trace
+                        DB::run("UPDATE request_tracer SET destination_uid = ? WHERE tid = ?", [$_SESSION["uid"], $lrow["tid"]]);
+
+                        // insert next trace (for inspector)
+                        DB::run("INSERT INTO request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($lrow["tracer_no"]) + 1, $_GET["rid"], $_SESSION["uid"], 'Inspector', 'Pending']);
+
+
+                      }
+
+                      
+
+                    }else{
               ?>
               <!-- Make Purchase Order -->
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2>Purchase Request</h2>
+                    <h2>Prepare Purchase Order</h2>
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
-                    <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
+                    <?php
+                      $rid = $_GET["rid"];
+                      $r = DB::run("SELECT * FROM request r JOIN user_accounts ua ON r.uid = ua.uid WHERE r.rid = ?", [$rid]);
+                      $row = $r->fetch();
+                    ?>
+                    <form action="<?php echo $_SERVER['REQUEST_URI'];?>" method="POST" data-parsley-validate id="frmList">
                       <div class="row">
-                        <div class="col-md-6 col-xs-12">
-                          <input type="hidden" class="form-control" id="uid" name="uid">
-                          <h3>Basic Information</h3>
-                          <label>Employee ID: </label>
-                          <input type="text" class="form-control" id="up_employeeid" name="employeeid" placeholder="Enter your text" required>
-                          <label>First Name: </label>
-                          <input type="text" class="form-control" id="fname" name="fname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
-                          <label>Middle Name: </label>
-                          <input type="text" class="form-control" id="mname" name="mname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
-                          <label>Last Name: </label>
-                          <input type="text" class="form-control" id="lname" name="lname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
-                          <label>Date of Birth: </label>
-                          <input type="date" class="form-control" id="birthdate" name="birthdate" required>
-                          <label>Gender: </label>
-                          <select name="gender" id="gender" class="form-control" required>
-                            <option value="">-- Please select a value --</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                          </select>
-                          <label>Citizenship: </label>
-                          <input type="text" class="form-control" id="citizenship" name="citizenship" placeholder="Enter your text" required>
-                          <label>Religion: </label>
-                          <input type="text" class="form-control" id="religion" name="religion" placeholder="Enter your text" required>
-                          <label>Address: </label>
-                          <input type="text" class="form-control" id="address" name="address" placeholder="Enter your text" required>
-                          <h3>Contact Information</h3>
-                          <label>Mobile Number: </label>
-                          <input type="text" class="form-control" id="contact_mobile" name="contact_mobile" placeholder="Enter your text" required data-inputmask="'mask': '9999 999 9999'">
-                          <label>Email Address: </label>
-                          <input type="email" class="form-control" id="contact_email" name="contact_email" placeholder="Enter your text" required>
+                        <div class="col-md-12 col-xs-12">
+                          <div class="row">
+                            <div class="col-md-2">
+                              <label>Request No.:</label>
+                              <input type="text" class="form-control" value="<?php echo $row['request_no']; ?>" readonly>
+                            </div>
+                            <div class="col-md-2">
+                              <label>Purchase Order No.:</label>
+                              <input type="text" class="form-control" name="po_number" placeholder="Please enter purchase order number" required>
+                            </div>
+                            <div class="col-md-3">
+                              <label>Supplier Name: </label>
+                              <input type="text" class="form-control" name="supplier_name" placeholder="Please enter supplier name" required>
+                            </div>
+                            <div class="col-md-5">
+                              <label>Supplier Address: </label>
+                              <input type="text" class="form-control" name="supplier_address" placeholder="Please enter supplier address" required>
+                            </div>
+                          </div>
+                          <hr/>
+                          <div class="row">
+                            <div class="col-md-12">
+                              <table class="table table-striped">
+                                <thead>
+                                  <tr>
+                                    <th>#</th>
+                                    <th>Item Code</th>
+                                    <th>Item Name/Description</th>
+                                    <th>Quantity</th>
+                                    <th>Unit of Measure</th>
+                                    <th>Unit Cost</th>
+                                    <th>Total</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <?php
+                                    $count = 1;
+                                    $i = DB::run("SELECT * FROM request_items ri JOIN item_dictionary id ON ri.itemid = id.itemid WHERE ri.rid = ?", [$_GET["rid"]]);
+                                    while($irow = $i->fetch()){
+                                  ?>
+                                  <tr>
+                                    <input type="hidden" name="riid[]" value="<?php echo $irow['riid']; ?>" required>
+                                    <th scope="row"><?php echo $count; ?></th>
+                                    <td><?php echo $irow["item_code"]; ?></td>
+                                    <td><?php echo $irow["item_name"] . " / (" . $irow["item_description"] . ")"; ?></td>
+                                    <td class="rowQ_<?php echo $irow['riid']; ?>"><?php echo $irow["requested_qty"]; ?></td>
+                                    <td><?php echo $irow["requested_unit"]; ?></td>
+                                    <td>
+                                      <input type="number" step="0.01" min="1" class="form-control rowC_<?php echo $irow['riid']; ?>" name="unit_cost[]" required data-parsley-type="number">
+                                    </td>
+                                    <td>
+                                      <input type="text" class="form-control rowT_<?php echo $irow['riid']; ?>" name="total_cost[]" readonly value="0">
+                                    </td>
+                                  </tr>
+                                  <?php
+                                      $count++;
+                                    }
+                                  ?>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
                         </div>
                       </div>
                       <br/>
                       <div class="modal-footer">
-                        <input type="submit" name="update_account" value="Save Changes" class="btn btn-success">
-                        <input type="submit" name="remove_account" value="Remove" class="btn btn-danger">
+                        <input type="submit" name="submitOrder" value="Submit" class="btn btn-success">
                       </div>
                     </form>
                   </div>
                 </div>
               </div>
               <?php
+                    }
                   }else{
               ?>
               <div class="alert alert-danger">
@@ -177,49 +278,51 @@
                      <table id="dtList" class="table table-striped table-bordered">
                         <thead>
                           <tr>
-                            <th>Item Code</th>
-                            <th>Current Quantity</th>
-                            <th>Item Unit</th>
-                            <th>Reorder Point</th>
-                            <th>Last Update</th>
-                            <th>Actions</th>
+                            <th width="100">Request No.</th>
+                            <th width="100">Date</th>
+                            <th>Type</th>
+                            <th>Requested By</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th width="300">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                         </tbody>
                       </table>
-                      <div class="modal fade cat_up" tabindex="-1" role="dialog" aria-hidden="true">
-                        <div class="modal-dialog">
+                      <div class="modal fade view_request" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
                           <div class="modal-content">
 
                             <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate id="frmCatUpdate">
                               <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
                                 </button>
-                                <h4 class="modal-title" id="myModalLabel">Update Category</h4>
+                                <h4 class="modal-title">Requested Items | <span id="requested_no">RN-01</span></h4>
                               </div>
                               <div class="modal-body">
-                                <input type="text" name="catid" id="catid" style="display: none;">
-                                <label>Category Code: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="cat_code" id="cat_code" placeholder="Enter your text ..." required>
-                                <br/>
-                                <label>Category Name: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="cat_name" id="cat_name" placeholder="Enter your text ..." required>
-                                <br/>
-                                <label>Category Description: </label>
-                                <input type="text" class="form-control" name="cat_descrip" id="cat_descrip" placeholder="Enter your text ...">
-                                <br/>
+                                <table class="table table-striped" id="requestItemsContainer">
+                                  <thead>
+                                    <tr>
+                                      <th>#</th>
+                                      <th>Item Code</th>
+                                      <th>Item Name/Description</th>
+                                      <th>Quantity</th>
+                                      <th>Unit of Measure</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    
+                                  </tbody>
+                                </table>
                               </div>
                               <div class="modal-footer">
-                                <input type="submit" name="update_cat" value="Save Changes" class="btn btn-success">
+                                <button class="btn btn-default" data-dismiss="modal">Close</button>
                               </div>
                             </form>
 
                           </div>
                         </div>
-                      </div>
-                      <div>
-                        <a href="list_supplies.php?type=make_order" class="btn btn-success btn-xs"><span class="fa fa-plus"> Make Purchase Order</span></a>
                       </div>
                   </div>
                 </div>
@@ -227,9 +330,6 @@
               <?php
                 }
               ?>
-
-
-
 
             </div>
           </div>
@@ -277,7 +377,7 @@
 
     <!-- Custom Theme Scripts -->
     <script src="../build/js/custom.js"></script>
-    <script src="js/custom/list_supplies.js"></script>
+    <script src="js/custom/list_requests.js"></script>
   </body>
   <script>
   if ( window.history.replaceState ) {

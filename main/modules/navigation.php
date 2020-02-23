@@ -86,16 +86,9 @@
           }
         ?>
         <?php
-          if(strpos($privileges, 'inspection_supplies') !== false){
+          if(strpos($privileges, 'inspection_supplies_equipments') !== false){
         ?>
-        <li><a href="#"><i class="fa fa-search"></i> Inspection of Supplies</a></li>
-        <?php
-          }
-        ?>
-        <?php
-          if(strpos($privileges, 'inspection_equipment') !== false){
-        ?>
-        <li><a href="#"><i class="fa fa-search"></i> Inspection of Equipments</a></li>
+        <li><a href="inspect_items.php"><i class="fa fa-search"></i> Inspection of Supplies / Equipments</a></li>
         <?php
           }
         ?>
@@ -106,21 +99,21 @@
           <a><i class="fa fa-list"></i> List of Issuances <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             <?php
-              if(strpos($privileges, 'doc_approval') !== false){
+              if(strpos($privileges, 'issuance_supplies') !== false){
             ?>
             <li><a href="#"><i class="fa fa-truck"></i> Issuance of Supplies</a></li>
             <?php
               }
             ?>
             <?php
-              if(strpos($privileges, 'doc_approval') !== false){
+              if(strpos($privileges, 'issuance_equipments') !== false){
             ?>
             <li><a href="#"><i class="fa fa-suitcase"></i> Issuance of Equipments</a></li>
             <?php
               }
             ?>
             <?php
-              if(strpos($privileges, 'doc_approval') !== false){
+              if(strpos($privileges, 'issuance_records') !== false){
             ?>
             <li><a href="#"><i class="fa fa-user"></i> Issuance Records</a></li>
             <?php

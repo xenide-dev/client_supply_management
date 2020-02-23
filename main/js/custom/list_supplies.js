@@ -20,11 +20,12 @@ function loadList(t){
             if(data.msg){
                 data.info.forEach(element => {
                     var actions = 
-                    `<a href="#" class="btn btn-primary btn-xs"><span class="fa fa-search"></span></a>
-                    <a href="#" class="btn btn-success btn-xs" onclick="loadData(` + element.itemid + `, 'item')" data-toggle="modal" data-target=".bs-update-modal-sm"><span class="fa fa-edit"></span> Edit</a>
+                    `<a href="#" class="btn btn-success btn-xs" onclick="loadData(` + element.itemid + `, 'item')" data-toggle="modal" data-target=".bs-update-modal-sm"><span class="fa fa-edit"></span> Edit</a>
                     <a href="#" class="btn btn-danger btn-xs" onclick="removeData(` + element.itemid + `, 'item', this)"><span class="fa fa-trash"></span></a>`;
+                    var itemName = element.item_name + "(" + element.item_description + ")";
                     t.row.add([
                         element.item_code,
+                        itemName,
                         element.item_qty,
                         element.item_unit,
                         element.reorder_point,

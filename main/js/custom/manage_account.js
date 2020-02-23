@@ -102,7 +102,6 @@ function showInfo(uid, fname, mname, lname, privileges) {
 }
 
 function setSwitchState(id, state){
-    console.log(id);
     var clickCheckbox = document.querySelector(id);
     if(state == true){
         if(!clickCheckbox.checked){
@@ -116,6 +115,15 @@ function setSwitchState(id, state){
 }
 
 function editRow(uid){
+    // reset checkbox
+    var switchF = $("#frmUpdate .js-switch");
+    for (let index = 0; index < switchF.length; index++) {
+        const element = switchF[index];
+        if(element.checked){
+            $("#" + element.id).click();
+        }
+    }
+    
     $.ajax({
         method: 'POST',
         url: 'modules/asyncUrls/manage_account.php',
@@ -140,9 +148,9 @@ function editRow(uid){
                 $("#gender").val(data.info.gender);
                 $("#user_type").val(data.info.user_type);
 
+
                 var privileges = data.info.priviledges.split(",");
                 privileges.forEach(element => {
-                    console.log(element);
                     setSwitchState("#" + element, true);
                 });
             }

@@ -1,3 +1,5 @@
 $(document).ready(function(){
-    $(".dtList").DataTable();
+    $(".dtList").DataTable({
+        responsive: true
+    });
 })

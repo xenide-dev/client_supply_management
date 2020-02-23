@@ -87,15 +87,27 @@
                         </thead>
                         <tbody>
                           <?php
-                            $retrieve = DB::run("SELECT * FROM request_tracer t JOIN request r ON t.rid = r.rid JOIN user_accounts u ON t.source_uid = u.uid WHERE t.destination_uid_type = 'Regional Director'");
+                            $retrieve = DB::run("SELECT * FROM request_tracer t JOIN request r ON t.rid = r.rid JOIN user_accounts u ON t.source_uid = u.uid WHERE t.destination_uid_type = 'Regional Director' AND t.status = 'Pending'");
                             while ($row = $retrieve->fetch()) {
-                                if($row["status"] == "Pending"){
-                                  $status = '<span class="label label-warning">Pending</span>';
-                                }elseif($row["status"] == "Approved"){
+                              if($row["status"] == "Pending"){
+                                  $status = '<span class="label label-warning">' . $row["status"] . '</span>';
+                              }elseif($row["status"] == "Approved"){
                                   $status = '<span class="label label-success">Approved</span>';
-                                }elseif($row["status"] == "Disapproved"){
-                                  $status = '<span class="label label-danger">Disapproved</span>';
-                                }
+                              }elseif($row["status"] == "Disapproved"){
+                                  $status = '<span class="label label-success">Disapproved</span>';
+                              }elseif($row["status"] == "Delivered"){
+                                  $status = '<span class="label label-success">Delivered</span>';
+                              }elseif($row["status"] == "Pending Items"){
+                                  $status = '<span class="label label-success">Pending Items</span>';
+                              }elseif($row["status"] == "Processing"){
+                                  $status = '<span class="label label-warning">Processing</span>';
+                              }elseif($row["status"] == "Inspected"){
+                                  $status = '<span class="label label-primary">Inspected</span>';
+                              }elseif($row["status"] == "Ready"){
+                                  $status = '<span class="label label-success">Ready for Issuance</span>';
+                              }elseif($row["status"] == "Accepted"){
+                                  $status = '<span class="label label-success">Accepted</span>';
+                              }
                           ?>
                           <tr>
                             <td><?php echo DB::formatDateTime($row["created_at"]); ?></td>
@@ -106,8 +118,15 @@
                             <td><?php echo $status; ?></td>
                             <td>
                               <a href="#" class="btn btn-success btn-xs" onclick="loadData(<?php echo $row['rid']; ?>, 'request', '#requestItemsContainer tbody');" data-toggle="modal" data-target=".view_request"><span class="fa fa-search"></span> View Items</a>
+                              <?php
+                                // check if the last trace if it is for regional director
+                                if($row["status"] == "Pending"){
+                              ?>
                               <button type="button" class="btn btn-success btn-xs row_<?php echo $row['tid']; ?>" onclick="processAction(<?php echo $row['tid']; ?>, <?php echo $row['rid']; ?>, <?php echo $_SESSION['uid']; ?>, 'Approved', <?php echo $row['tracer_no']; ?>, '<?php echo $row['request_type']; ?>', this);">Approved!</button>
                               <button type="button" class="btn btn-danger btn-xs row_<?php echo $row['tid']; ?>" onclick="processAction(<?php echo $row['tid']; ?>, <?php echo $row['rid']; ?>, <?php echo $_SESSION['uid']; ?>, 'Disapproved', <?php echo $row['tracer_no']; ?>, '<?php echo $row['request_type']; ?>', this);">Disapproved!</button>
+                              <?php
+                                }
+                              ?>
                             </td>
                           </tr>
                           <?php
@@ -146,39 +165,6 @@
                               </div>
                             </form>
 
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <button class="btn btn-success btn-xs" data-toggle="modal" data-target=".cat"><span class="fa fa-plus"></span> Add Category</button>
-
-                        <div class="modal fade cat" tabindex="-1" role="dialog" aria-hidden="true">
-                          <div class="modal-dialog modal-sm">
-                            <div class="modal-content">
-
-                              <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
-                                <div class="modal-header">
-                                  <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
-                                  </button>
-                                  <h4 class="modal-title">Add Category</h4>
-                                </div>
-                                <div class="modal-body">
-                                  <label>Category Code: <span class="text-danger">*</span></label>
-                                  <input type="text" class="form-control" name="cat_code" placeholder="Enter your text ..." required>
-                                  <br/>
-                                  <label>Category Name: <span class="text-danger">*</span></label>
-                                  <input type="text" class="form-control" name="cat_name" placeholder="Enter your text ..." required>
-                                  <br/>
-                                  <label>Category Description: </label>
-                                  <input type="text" class="form-control" name="cat_descrip" placeholder="Enter your text ...">
-                                  <br/>
-                                </div>
-                                <div class="modal-footer">
-                                  <button type="submit" name="submit_cat" class="btn btn-primary">Add Category</button>
-                                </div>
-                              </form>
-
-                            </div>
                           </div>
                         </div>
                       </div>

@@ -252,7 +252,7 @@
                         <div class="modal-dialog modal-lg">
                           <div class="modal-content">
 
-                            <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
+                            <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate id="frmUpdate">
                               <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
                                 </button>
@@ -315,8 +315,7 @@
                                       <label><input type="checkbox" name="privileges[]" id="list_equipment" class="js-switch" value="list_equipment" /> List of Equipments</label><br/>
                                       <label><input type="checkbox" name="privileges[]" id="list_request" class="js-switch" value="list_request" /> List of Requests</label><br/>
                                       <label><input type="checkbox" name="privileges[]" id="doc_approval" class="js-switch" value="doc_approval" /> Documents for Approval</label><br/>
-                                      <label><input type="checkbox" name="privileges[]" id="inspection_supplies" class="js-switch" value="inspection_supplies" /> Inspection of Supplies</label><br/>
-                                      <label><input type="checkbox" name="privileges[]" id="inspection_equipment" class="js-switch" value="inspection_equipment" /> Inspection of Equipments</label><br/>
+                                      <label><input type="checkbox" name="privileges[]" id="inspection_supplies_equipments" class="js-switch" value="inspection_supplies_equipments" /> Inspection of Supplies/Equipments</label><br/>
                                       <label>List of Issuances: </label><br/>
                                       <div style="margin-left: 20px;">
                                         <label><input type="checkbox" id="issuance_supplies" name="privileges[]" class="js-switch" value="issuance_supplies" /> Issuance of Supplies</label><br/>
@@ -425,8 +424,7 @@
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_equipment" /> List of Equipments</label><br/>
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_request" /> List of Requests</label><br/>
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="doc_approval" /> Documents for Approval</label><br/>
-                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="inspection_supplies" /> Inspection of Supplies</label><br/>
-                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="inspection_equipment" /> Inspection of Equipments</label><br/>
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="inspection_supplies_equipments" /> Inspection of Supplies/Equipments</label><br/>
                                         <label>List of Issuances: </label><br/>
                                         <div style="margin-left: 20px;">
                                           <label><input type="checkbox" id="grp1_1" name="privileges[]" class="js-switch" value="issuance_supplies" /> Issuance of Supplies</label><br/>

@@ -82,8 +82,34 @@
                       <div class="row">
                         <div class="col-md-6 col-xs-12">
                           <input type="hidden" class="form-control" id="uid" name="uid">
-                          <label>Supplier Name: </label>
+                          <h3>Basic Information</h3>
+                          <label>Employee ID: </label>
                           <input type="text" class="form-control" id="up_employeeid" name="employeeid" placeholder="Enter your text" required>
+                          <label>First Name: </label>
+                          <input type="text" class="form-control" id="fname" name="fname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
+                          <label>Middle Name: </label>
+                          <input type="text" class="form-control" id="mname" name="mname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
+                          <label>Last Name: </label>
+                          <input type="text" class="form-control" id="lname" name="lname" placeholder="Enter your text" required data-parsley-pattern="/^[A-Za-z]+$/">
+                          <label>Date of Birth: </label>
+                          <input type="date" class="form-control" id="birthdate" name="birthdate" required>
+                          <label>Gender: </label>
+                          <select name="gender" id="gender" class="form-control" required>
+                            <option value="">-- Please select a value --</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                          </select>
+                          <label>Citizenship: </label>
+                          <input type="text" class="form-control" id="citizenship" name="citizenship" placeholder="Enter your text" required>
+                          <label>Religion: </label>
+                          <input type="text" class="form-control" id="religion" name="religion" placeholder="Enter your text" required>
+                          <label>Address: </label>
+                          <input type="text" class="form-control" id="address" name="address" placeholder="Enter your text" required>
+                          <h3>Contact Information</h3>
+                          <label>Mobile Number: </label>
+                          <input type="text" class="form-control" id="contact_mobile" name="contact_mobile" placeholder="Enter your text" required data-inputmask="'mask': '9999 999 9999'">
+                          <label>Email Address: </label>
+                          <input type="email" class="form-control" id="contact_email" name="contact_email" placeholder="Enter your text" required>
                         </div>
                       </div>
                       <br/>
@@ -112,7 +138,7 @@
                     <div id="loading-circle"></div>
                   </div>
                   <div class="x_title">
-                    <h2>List of Supplies</h2>
+                    <h2>Inspection and Acceptance of Supplies and Equipments</h2>
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
@@ -151,50 +177,52 @@
                      <table id="dtList" class="table table-striped table-bordered">
                         <thead>
                           <tr>
-                            <th>Item Code</th>
-                            <th>Item Name/Description</th>
-                            <th>Current Quantity</th>
-                            <th>Item Unit</th>
-                            <th>Reorder Point</th>
-                            <th>Last Update</th>
-                            <th>Actions</th>
+                            <th width="150">Purchase Order No.</th>
+                            <th>Supplier Name</th>
+                            <th>Supplier Address</th>
+                            <th>Date</th>
+                            <th>Requested By</th>
+                            <th width="250">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                         </tbody>
                       </table>
-                      <div class="modal fade cat_up" tabindex="-1" role="dialog" aria-hidden="true">
-                        <div class="modal-dialog">
+                      <div class="modal fade viewItem" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
                           <div class="modal-content">
 
                             <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate id="frmCatUpdate">
                               <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
                                 </button>
-                                <h4 class="modal-title" id="myModalLabel">Update Category</h4>
+                                <h4 class="modal-title" id="myModalLabel">Item Lists</h4>
                               </div>
                               <div class="modal-body">
-                                <input type="text" name="catid" id="catid" style="display: none;">
-                                <label>Category Code: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="cat_code" id="cat_code" placeholder="Enter your text ..." required>
-                                <br/>
-                                <label>Category Name: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="cat_name" id="cat_name" placeholder="Enter your text ..." required>
-                                <br/>
-                                <label>Category Description: </label>
-                                <input type="text" class="form-control" name="cat_descrip" id="cat_descrip" placeholder="Enter your text ...">
-                                <br/>
+                                <table class="table table-striped" id="itemsContainer">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Item Code</th>
+                                            <th>Item Name/Description</th>
+                                            <th>Quantity</th>
+                                            <th>Unit of Measure</th>
+                                            <th>Unit Cost</th>
+                                            <th>Total Cost</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        
+                                    </tbody>
+                                </table>
                               </div>
                               <div class="modal-footer">
-                                <input type="submit" name="update_cat" value="Save Changes" class="btn btn-success">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                               </div>
                             </form>
 
                           </div>
                         </div>
-                      </div>
-                      <div>
-                        <a href="list_supplies.php?type=make_order" class="btn btn-success btn-xs"><span class="fa fa-plus"> Make Purchase Order</span></a>
                       </div>
                   </div>
                 </div>
@@ -252,7 +280,7 @@
 
     <!-- Custom Theme Scripts -->
     <script src="../build/js/custom.js"></script>
-    <script src="js/custom/list_supplies.js"></script>
+    <script src="js/custom/inspection.js"></script>
   </body>
   <script>
   if ( window.history.replaceState ) {

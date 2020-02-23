@@ -24,14 +24,18 @@ $(document).ready(function(){
                                             <option value="">-- Please select an item/equipment --</option>
                                             `;
                     data.info.forEach(element => {
-                        var itemFormat = element.item_name + " (" + element.item_description + ")";
+                        if(element.rem_qty != undefined){
+                            var itemFormat = element.item_name + " (" + element.item_description + ") | Qty: " + element.rem_qty;
+                        }else{
+                            var itemFormat = element.item_name + " (" + element.item_description + ")";
+                        }
                         temp += `<option value="` + element.itemid + `">` + itemFormat + `</option>`;
                     });
                     temp += `</select>
                                 </div>
                                 <div class="col-md-2">
                                     <label>Quantity:</label>
-                                    <input type="text" name="requested_qty[]" placeholder="Please enter a quantity" class="form-control" required data-parsley-type="integer">
+                                    <input type="number" min="1" name="requested_qty[]" placeholder="Please enter a quantity" class="form-control item_qty" required data-parsley-type="integer">
                                 </div>
                                 <div class="col-md-2">
                                     <label>Unit:</label>
@@ -39,7 +43,7 @@ $(document).ready(function(){
                                 </div>
                                 <div class="col-md-2">
                                     <label>Type:</label>
-                                    <input type="text" placeholder="Please select an item/equipment" class="form-control item_type" name="item_type[]" readonly>
+                                    <input type="text" placeholder="Please select an item/equipment" class="form-control item_type" name="item_type[]" readonly required>
                                 </div>
                                 <div class="col-md-1">
                                     <label>Action</label>
@@ -111,6 +115,12 @@ function init_select2(id, pID){
             },
             success: function(data){
                 if(data.msg){
+                    if(data.info.rem_qty != undefined){
+                        if(data.info.rem_qty != 0){
+                            $(pID).find('.item_qty').prop("max", data.info.rem_qty);
+                        }
+                    }
+
                     $(pID).find('.item_unit').val(data.info.item_default_unit);
                     $(pID).find('.item_type').val(data.info.item_type);
                 }

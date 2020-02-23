@@ -159,7 +159,11 @@
                           // check if item already exist based on item code
                           $i = DB::run("SELECT * FROM item_dictionary WHERE item_code = ?", [$item_code]);
                           if($ir = $i->fetch()){
-                            // update
+                            // update based on item_code
+                            $u = DB::run("UPDATE item_dictionary SET catid = ?, item_name = ?, item_description = ?, item_default_unit = ? WHERE item_code = ?", [$catid, $item_name, $item_descrip, $item_default_unit, $item_code]);
+                            if($u->rowCount() > 0){
+                              $flag = true;
+                            }
                           }else{
                             // insert as new
                             $a = DB::run("INSERT INTO item_dictionary(catid, item_code, item_name, item_description, item_default_unit) VALUES(?, ?, ?, ?, ?)", [$catid, $item_code, $item_name, $item_descrip, $item_unit]);
