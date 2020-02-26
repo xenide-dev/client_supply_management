@@ -33,6 +33,9 @@
     <link href="../vendors/pnotify/dist/pnotify.css" rel="stylesheet">
     <link href="../vendors/pnotify/dist/pnotify.buttons.css" rel="stylesheet">
     <link href="../vendors/pnotify/dist/pnotify.nonblock.css" rel="stylesheet">
+    <!-- select2 -->
+    <link href="../vendors/select2/css/select2.min.css" rel="stylesheet">
+    <link href="../vendors/select2-bootstrap4-theme/select2-bootstrap4.min.css" rel="stylesheet">
 
 
     <!-- Custom Theme Style -->
@@ -68,34 +71,93 @@
             <div class="row">
               <?php
                 if(isset($_GET["type"])){
-                  if($_GET["type"] == "make_order"){
+                  if($_GET["type"] == "make_request"){
               ?>
-              <!-- Make Purchase Order -->
-              <div class="col-md-12 col-sm-12 col-xs-12">
-                <div class="x_panel">
-                  <div class="x_title">
-                    <h2>Purchase Order</h2>
-                    <div class="clearfix"></div>
-                  </div>
-                  <div class="x_content">
-                    <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
-                      <div class="row">
-                        <div class="col-md-6 col-xs-12">
-                          <input type="hidden" class="form-control" id="uid" name="uid">
-                          <label>Supplier Name: </label>
-                          <input type="text" class="form-control" id="up_employeeid" name="employeeid" placeholder="Enter your text" required>
-                        </div>
-                      </div>
-                      <br/>
-                      <div class="modal-footer">
-                        <input type="submit" name="update_account" value="Save Changes" class="btn btn-success">
-                        <input type="submit" name="remove_account" value="Remove" class="btn btn-danger">
-                      </div>
-                    </form>
-                  </div>
-                </div>
+              <?php
+                    if(isset($_POST["request_purpose"])){
+                        $request_purpose = $_POST["request_purpose"];
+                        $request_no = strtoupper($_POST["request_no"]);
+                        $counts = (isset($_POST["item_type"]) ? array_count_values($_POST["item_type"]) : null);
+                        $totalSupplies = (isset($counts["Consumable"]) ? $counts["Consumable"] : 0);
+                        $totalEquipments = (isset($counts["Non-Consumable"]) ? $counts["Non-Consumable"] : 0);
+
+                        // check if request number already exist
+                        $c = DB::run("SELECT * FROM request WHERE request_no = ?", [$request_no]);
+                        if($c->fetch()){
+              ?>
+              <div class="alert alert-danger">
+                  <strong>Error!</strong> Request Number already exist!
               </div>
               <?php
+                        }else{
+                            // insert to main table
+                            $m = DB::run("INSERT INTO request(uid, request_no, request_type, request_purpose, total_supplies_requested, total_equipments_requested) VALUES(?, ?, ?, ?, ?, ?)", [$_SESSION["uid"], $request_no, 'Purchase Request', $request_purpose, $totalSupplies, $totalEquipments]);
+                            $lastID = DB::getLastInsertedID();
+                            if(isset($_POST["itemid"])){
+                                // insert to sub table
+                                for($i = 0; $i < count($_POST["itemid"]); $i++){
+                                    DB::run("INSERT INTO request_items(rid, itemid, requested_qty, requested_unit) VALUES(?, ?, ?, ?)", [$lastID, $_POST["itemid"][$i], $_POST["requested_qty"][$i], $_POST["requested_unit"][$i]]);
+                                }
+                            }
+
+                            // create trace entry
+                            DB::insertTraceEntry(1, $lastID, $_SESSION["uid"], "Regional Director", null, "Pending", null);
+              ?>
+              <div class="alert alert-success">
+                  <strong>Success!</strong> Your request has been submitted. Thank you! <a href="list_supplies.php">Go back</a>
+              </div>
+              <?php
+                        }
+                    }else{
+                      ?>
+                      <!-- Make Purchase Order -->
+                      <div class="col-md-12 col-sm-12 col-xs-12">
+                        <div class="x_panel">
+                          <div class="x_title">
+                            <h2>Purchase Request</h2>
+                            <div class="clearfix"></div>
+                          </div>
+                          <div class="x_content">
+                            <?php
+                                $rn = DB::run("SELECT * FROM request ORDER BY rid DESC");
+                                $rnrow = $rn->fetch();
+                                if(isset($rnrow["rid"])){
+                                    $len = strlen(strval($rnrow["rid"])) + 1;
+                                    $rnno = "RN-" . str_pad($rnrow["rid"] + 1, $len, '0', STR_PAD_LEFT);
+                                }else{
+                                    $rnno = "RN-" . str_pad(1, 2, '0', STR_PAD_LEFT);
+                                }
+                            ?>
+                            <form action="<?php echo $_SERVER['REQUEST_URI'];?>" method="POST" data-parsley-validate id="frmForm">
+                              <div class="form-group">
+                                  <div class="row">
+                                      <div class="col-md-4 col-xs-12">
+                                          <label>Request No.: </label>
+                                          <input type="text" class="form-control" name="request_no" placeholder="Request Number" value="<?php echo $rnno; ?>">
+                                      </div>
+                                      <div class="col-md-8 col-xs-12">
+                                          <label>Purpose: </label>
+                                          <input type="text" class="form-control" name="request_purpose" placeholder="Please enter your purpose">
+                                      </div>
+                                  </div>
+                              </div>
+                              <div class="form-group">
+                                  <label>Add Item/Equipment</label>
+                                  <div class="requestItemContainer">
+                                      
+                                  </div>
+                                  <br/>
+                                  <button type="button" class="btn btn-primary btn-xs" id="btnAddItemPurchase"><span class="fa fa-plus"></span> Add item/equipment</button>
+                              </div>
+                              <div class="modal-footer">
+                                <input type="submit" class="btn btn-primary" name="frmsubmit" value="Submit Request">
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+              <?php
+                    }
                   }else{
               ?>
               <div class="alert alert-danger">
@@ -194,7 +256,7 @@
                         </div>
                       </div>
                       <div>
-                        <a href="list_supplies.php?type=make_order" class="btn btn-success btn-xs"><span class="fa fa-plus"> Make Purchase Order</span></a>
+                        <a href="list_supplies.php?type=make_request" class="btn btn-success btn-xs"><span class="fa fa-plus"> Make Purchase Request</span></a>
                       </div>
                   </div>
                 </div>
@@ -249,6 +311,8 @@
     <script src="../vendors/parsleyjs/dist/parsley.min.js"></script>
     <!-- sweetalert -->
     <script src="../vendors/sweetalert/sweetalert.min.js"></script>
+    <!-- select2 -->
+    <script src="../vendors/select2/js/select2.full.min.js"></script>
 
     <!-- Custom Theme Scripts -->
     <script src="../build/js/custom.js"></script>

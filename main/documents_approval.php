@@ -87,7 +87,7 @@
                         </thead>
                         <tbody>
                           <?php
-                            $retrieve = DB::run("SELECT * FROM request_tracer t JOIN request r ON t.rid = r.rid JOIN user_accounts u ON t.source_uid = u.uid WHERE t.destination_uid_type = 'Regional Director' AND t.status = 'Pending'");
+                            $retrieve = DB::run("SELECT t.status, t.created_at, r.request_no, r.request_type, u.fname, u.mname, u.lname, u.midinit, r.request_purpose, t.rid, t.tid, t.tracer_no, t.remarks FROM request_tracer t JOIN request r ON t.rid = r.rid JOIN user_accounts u ON t.source_uid = u.uid WHERE t.destination_uid_type = 'Regional Director' AND t.status = 'Pending'");
                             while ($row = $retrieve->fetch()) {
                               if($row["status"] == "Pending"){
                                   $status = '<span class="label label-warning">' . $row["status"] . '</span>';
@@ -112,7 +112,18 @@
                           <tr>
                             <td><?php echo DB::formatDateTime($row["created_at"]); ?></td>
                             <td><?php echo $row["request_no"]; ?></td>
-                            <td><?php echo $row["request_type"]; ?></td>
+                            <td>
+                              <?php 
+                                // check if the remarks has a Purchase Order value
+                                if($row["remarks"] == "Purchase Order"){
+                                  echo "Purchase Order";
+                                  $request_type = "Purchase Order";
+                                }else{
+                                  echo $row["request_type"]; 
+                                  $request_type = $row["request_type"];
+                                }
+                              ?>
+                            </td>
                             <td><?php echo $row["lname"] . ", " . $row["fname"] . " " . $row["midinit"]; ?></td>
                             <td><?php echo $row["request_purpose"]; ?></td>
                             <td><?php echo $status; ?></td>
@@ -122,8 +133,8 @@
                                 // check if the last trace if it is for regional director
                                 if($row["status"] == "Pending"){
                               ?>
-                              <button type="button" class="btn btn-success btn-xs row_<?php echo $row['tid']; ?>" onclick="processAction(<?php echo $row['tid']; ?>, <?php echo $row['rid']; ?>, <?php echo $_SESSION['uid']; ?>, 'Approved', <?php echo $row['tracer_no']; ?>, '<?php echo $row['request_type']; ?>', this);">Approved!</button>
-                              <button type="button" class="btn btn-danger btn-xs row_<?php echo $row['tid']; ?>" onclick="processAction(<?php echo $row['tid']; ?>, <?php echo $row['rid']; ?>, <?php echo $_SESSION['uid']; ?>, 'Disapproved', <?php echo $row['tracer_no']; ?>, '<?php echo $row['request_type']; ?>', this);">Disapproved!</button>
+                              <button type="button" class="btn btn-success btn-xs row_<?php echo $row['tid']; ?>" onclick="processAction(<?php echo $row['tid']; ?>, <?php echo $row['rid']; ?>, <?php echo $_SESSION['uid']; ?>, 'Approved', <?php echo $row['tracer_no']; ?>, '<?php echo $request_type; ?>', this);">Approved!</button>
+                              <button type="button" class="btn btn-danger btn-xs row_<?php echo $row['tid']; ?>" onclick="processAction(<?php echo $row['tid']; ?>, <?php echo $row['rid']; ?>, <?php echo $_SESSION['uid']; ?>, 'Disapproved', <?php echo $row['tracer_no']; ?>, '<?php echo $request_type; ?>', this);">Disapproved!</button>
                               <?php
                                 }
                               ?>

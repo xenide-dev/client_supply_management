@@ -76,7 +76,8 @@ function loadList(t){
             if(data.msg){
                 data.info.forEach(element => {
                     var view_items = `<button class="btn btn-primary btn-xs" onclick="loadData(` + element.rid + `, 'request', '#requestItemsContainer tbody');" data-toggle="modal" data-target=".view_request">View Items</button>`;
-                    var issuance = `<button class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'issuance', 'Ready', this)"> Ready for Issuance</button>`;
+                    // var issuance = `<button class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'issuance', 'Ready', this)"> Ready for Issuance</button>`;
+                    var issuance = `<a href="list_requests.php?type=make_issuance_report&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">Prepare Issuance Report</a>`;
                     var prepare_purchase_order = `<a href="list_requests.php?type=make_order&rid=` + element.rid + `" class="btn btn-success btn-xs" onclick="loadData(` + element.rid + `, 'item')" > Prepare Purchase Order</a>`;
                     var accept = `<button type="button" class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'request', 'Accepted', this)"> Accept</button>`;
                     var requestedBy = element.lname + ", " + element.fname + " " + element.midinit;
@@ -196,4 +197,31 @@ function processAction(rid, type, status, ref){
             }
         })
     }
+}
+
+function transferItems(ref){
+    var row = $(ref).closest('tr').html();
+    var par = $(ref).parents('tr');
+    var val = par.find('input.item').val();
+    if(val.indexOf('ics') >= 0){
+        $("table.par tbody").append('<tr>'+row+'</tr>');
+        $("table.par tbody tr:last-child input[name*='report_item']").val(val.replace('ics', 'par'));
+        var nameText = $("table.par tbody tr:last-child input[name*='item_no']").prop("name");
+        var nameText1 = $("table.par tbody tr:last-child input[name*='report_item']").prop("name");
+        $("table.par tbody tr:last-child input[name*='item_no']").prop("name", nameText.replace('ics', 'par'));
+        $("table.par tbody tr:last-child input[name*='report_item']").prop("name", nameText1.replace('ics', 'par'));
+        $("table.par tbody tr:last-child button").html(">>");
+        $("table.par tbody tr:last-child").children(":eq(7)").after($("table.par tbody tr:last-child").children(":eq(0)"));
+    }else{
+        $("table.ics tbody").append('<tr>'+row+'</tr>');
+        $("table.ics tbody tr:last-child input[name*='report_item']").val(val.replace('par', 'ics'));
+        var nameText = $("table.ics tbody tr:last-child input[name*='item_no']").prop("name");
+        var nameText1 = $("table.ics tbody tr:last-child input[name*='report_item']").prop("name");
+        $("table.ics tbody tr:last-child input[name*='item_no']").prop("name", nameText.replace('par', 'ics'));
+        $("table.ics tbody tr:last-child input[name*='report_item']").prop("name", nameText1.replace('par', 'ics'));
+        $("table.ics tbody tr:last-child button").html("<<");
+        $("table.ics tbody tr:last-child").children(":eq(0)").before($("table.ics tbody tr:last-child").children(":eq(7)"));
+    }
+
+    $(ref).parents('tr').remove();
 }

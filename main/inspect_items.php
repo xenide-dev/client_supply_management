@@ -33,6 +33,8 @@
     <link href="../vendors/pnotify/dist/pnotify.css" rel="stylesheet">
     <link href="../vendors/pnotify/dist/pnotify.buttons.css" rel="stylesheet">
     <link href="../vendors/pnotify/dist/pnotify.nonblock.css" rel="stylesheet">
+    <!-- iCheck -->
+    <link href="../vendors/iCheck/skins/flat/green.css" rel="stylesheet">
 
 
     <!-- Custom Theme Style -->
@@ -209,6 +211,7 @@
                                             <th>Unit of Measure</th>
                                             <th>Unit Cost</th>
                                             <th>Total Cost</th>
+                                            <th>Delivered?</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -217,6 +220,7 @@
                                 </table>
                               </div>
                               <div class="modal-footer">
+                                <button type="button" class="btn btn-success" onclick="processDelivery();">Save</button>
                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                               </div>
                             </form>
@@ -277,6 +281,8 @@
     <script src="../vendors/parsleyjs/dist/parsley.min.js"></script>
     <!-- sweetalert -->
     <script src="../vendors/sweetalert/sweetalert.min.js"></script>
+    <!-- iCheck -->
+    <script src="../vendors/iCheck/icheck.min.js"></script>
 
     <!-- Custom Theme Scripts -->
     <script src="../build/js/custom.js"></script>

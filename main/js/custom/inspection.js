@@ -20,8 +20,7 @@ function loadList(t){
             if(data.msg){
                 data.info.forEach(element => {
                     var actions = 
-                    `<a href="#" class="btn btn-success btn-xs" onclick="loadData(` + element.poid + `, 'request', '#itemsContainer tbody');" data-toggle="modal" data-target=".viewItem"><span class="fa fa-search"></span> View Items</a>
-                    <button type="button" class="btn btn-success btn-xs" onclick="processAction(` + element.poid + `, ` + element.rid + `, 'Approved', this);"><span class="fa fa-legal"></span> Approved</button>`;
+                    `<a href="#" class="btn btn-success btn-xs" onclick="loadData(` + element.poid + `, 'request', '#itemsContainer tbody');" data-toggle="modal" data-target=".viewItem"><span class="fa fa-search"></span> Inspect Items</a>`;
                     var requestedBy = element.lname + ", " + element.fname + " " + element.midinit;
                     t.row.add([
                         element.po_number,
@@ -65,8 +64,19 @@ function loadData(id, tableName, containerID){
                                 <td>` + value.requested_unit + `</td>
                                 <td>` + value.unit_cost + `</td>
                                 <td>` + value.total_cost + `</td>
+                                <td>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" class="flat" name="isDelivered[]" value="` + value.poiid + `" `+ ((value.isDelivered == 1) ? `checked` : ``) +`>
+                                        </label>
+                                    </div>
+                                </td>
                             </tr>`;
                         $(containerID).append(temp);
+                        $('input.flat').iCheck({
+                            checkboxClass: 'icheckbox_flat-green',
+                            radioClass: 'iradio_flat-green'
+                        });
                     });
                 }
             }
@@ -106,4 +116,91 @@ function processAction(poid, rid, action, ref){
             });
         }
     });
+}
+
+var poiid;
+function processDelivery(){
+    poiid = [];
+    var flag = false;
+    $(".viewItem tbody input.flat").each(function(index, value){
+        var val = $(this).val();
+        var state = 0;
+        if(value.checked){
+            flag = true;
+            state = 1;
+        }
+
+        poiid.push({val: val, state: state});
+    });
+    if(!flag){
+        swal("Error!", "Please mark at least one item", "error");
+    }else{
+        swal({
+            title: "Do you want to save your changes?",
+            icon: "warning",
+            buttons: ["No", "Yes"],
+            dangerMode: true,
+        }).then((value) => {
+            if(value){
+                // proceed to save
+                $.ajax({
+                    method: 'POST',
+                    url: 'modules/asyncUrls/data_entry.php',
+                    dataType: 'JSON',
+                    data: {
+                        type: 'purchase',
+                        operation: 'processInspection',
+                        poiid: poiid,
+                        flag: flag
+                    },
+                    success: function(data){
+                        if(data.msg){
+                            if(data.done){
+                                swal("Success!", "Inspection report has been save!", "success").then(() => {
+                                    swal({
+                                        title: "Report submission notice!",
+                                        text: "We notice that all the items has been delivered completely, Do you want to submit a report back to the administrator? Once you proceed, the process cannot be undone!",
+                                        icon: "warning",
+                                        buttons: ["No", "Yes"],
+                                        dangerMode: true,
+                                    }).then((value) => {
+                                        if(value){
+                                            // process ajax submission
+                                            $.ajax({
+                                                method: 'POST',
+                                                url: 'modules/asyncUrls/data_entry.php',
+                                                dataType: 'JSON',
+                                                data: {
+                                                    type: 'purchase',
+                                                    operation: 'processInspectionReport',
+                                                    poid: data.poid,
+                                                    rid: data.rid,
+                                                    action: 'Approved'
+                                                },
+                                                success: function(data){
+                                                    if(data.msg){
+                                                        swal("Success!", "Report has been submitted. Thank You!", "success").then(() => {
+                                                            window.location.reload();
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        }else{
+                                            swal("Cancelled!", "Report submission has been cancelled!", "warning").then(() => {
+                                                window.location.reload();
+                                            });
+                                        }
+                                    })
+                                });
+                            }else{
+                                swal("Success!", "Inspection report has been save!", "success").then(() => {
+                                    window.location.reload();
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
 }

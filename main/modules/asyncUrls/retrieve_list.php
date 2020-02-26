@@ -19,9 +19,22 @@
                 $output["msg"] = true;
             }elseif($_POST["operation"] == "getAllRequest"){
                 // retrieve all request
+                $rows = [];
+
                 $r = DB::run("SELECT * FROM request r JOIN user_accounts u ON r.uid = u.uid ORDER BY r.created_at ASC");
-                $row = $r->fetchAll();
-                $output["info"] = $row;
+                while($row = $r->fetch()){
+                    // get the last row of the trace and attach
+                    $i = DB::run("SELECT * FROM request_tracer WHERE rid = ? ORDER BY tracer_no DESC", [$row["rid"]]);
+                    $irow = $i->fetch();
+                    
+                    $row["hash_val"] = md5($row["rid"]);
+                    // check if the last record is for approval of purchase order
+                    if($irow["remarks"] != "Purchase Order"){
+                        array_push($rows, $row);
+                    }
+                }
+                
+                $output["info"] = $rows;
                 $output["msg"] = true;
             }
         }elseif($_POST["type"] == "purchase"){

@@ -55,7 +55,7 @@
                 $tracer_no = $_POST["tracer_no"];
                 $request_type = $_POST["request_type"];
                 if($action == "Approved"){
-                    if($request_type == "Requisition"){
+                    if($request_type == "Requisition" || $request_type == "Purchase Order"){
                         $status = "Processing";
                     }elseif($request_type == "Purchase Request"){
                         $status = "Approved";
@@ -68,42 +68,48 @@
                 DB::run("UPDATE request SET status = ?, updated_at = ? WHERE rid = ?", [$status, DB::getCurrentDateTime(), $rid]);
 
                 // update the previous trace
-                DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, $status, $tid]);
+                if($request_type == "Requisition" || $request_type == "Purchase Request"){
+                    DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, $status, $tid]);
+                }elseif($request_type == "Purchase Order"){
+                    DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, 'Approved', $tid]);
+                }
 
                 if($action == "Approved"){
-                    // create another trace entry
-                    DB::run("INSERT request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'Administrator', $status]);
+                    if($request_type == "Requisition" || $request_type == "Purchase Request"){
+                       // create another trace entry : forwarded to Administrator (if purchase request or requisition);
+                        DB::run("INSERT request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'Administrator', $status]);
+                    }elseif($request_type == "Purchase Order"){
+                        // create another trace entry : forwarded to Inspector (if purchase order);
+                        DB::run("INSERT INTO request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'Inspector', 'Pending']);
+                    }
+
                 }
 
                 $output["msg"] = true;
             }
         }elseif($_POST["type"] == "purchase"){
             if($_POST["operation"] == "processInspection"){
-                $poid = $_POST["poid"];
-                $rid = $_POST["rid"];
-                $action = $_POST["action"];
-                $uid = $_SESSION["uid"];
-                if($action == "Approved"){
-                    $status = "Inspected";   
+                $poiid = $_POST["poiid"];
+
+                for ($i=0; $i < count($poiid); $i++) { 
+                    $u = DB::run("UPDATE purchase_order_items SET isDelivered = ? WHERE poiid = ?", [$poiid[$i]["state"], $poiid[$i]["val"]]);
                 }
 
-                // update purchase order table
-                DB::run("UPDATE purchase_order SET status = ?, updated_at = ? WHERE poid = ?", [$status, DB::getCurrentDateTime(), $poid]);
+                // get id
+                $g = DB::run("SELECT * FROM purchase_order_items poi JOIN purchase_order po ON poi.poid = po.poid WHERE poi.poiid = ?", [ $poiid[0]["val"] ]);
+                $grow = $g->fetch();
+                
+                $output["poid"] = $grow["poid"];
+                $output["rid"] = $grow["rid"];
 
-                // update the request entry status
-                DB::run("UPDATE request SET status = ?, updated_at = ? WHERE rid = ?", [$status, DB::getCurrentDateTime(), $rid]);
-
-                // get the last trace record
-                $t = DB::run("SELECT * FROM request_tracer WHERE rid = ? AND destination_uid_type = 'Inspector' AND status = 'Pending' ORDER BY tracer_no DESC", [$rid]);
-                $trow = $t->fetch();
-                $tracer_no = $trow["tracer_no"];
-
-                // update the previous trace
-                DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, $status, $trow["tid"]]);
-
-                // create another trace entry
-                DB::run("INSERT request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'Administrator', 'Pending']);
-
+                // check if all items has been delivered
+                $output["done"] = true;
+                $c = DB::run("SELECT * FROM purchase_order_items WHERE poid = ?", [$grow["poid"]]);
+                while($crow = $c->fetch()){
+                    if($crow["isDelivered"] != 1){
+                        $output["done"] = false;
+                    }
+                }
                 $output["msg"] = true;
             }elseif($_POST["operation"] == "processPurchase"){
                 $rid = $_POST["rid"];
@@ -188,6 +194,32 @@
                 }
 
 
+                $output["msg"] = true;
+            }elseif($_POST["operation"] == "processInspectionReport"){
+                $poid = $_POST["poid"];
+                $rid = $_POST["rid"];
+                $action = $_POST["action"];
+                $uid = $_SESSION["uid"];
+                if($action == "Approved"){
+                    $status = "Inspected";   
+                }
+
+                // update purchase order table
+                DB::run("UPDATE purchase_order SET status = ?, updated_at = ? WHERE poid = ?", [$status, DB::getCurrentDateTime(), $poid]);
+
+                // update the request entry status
+                DB::run("UPDATE request SET status = ?, updated_at = ? WHERE rid = ?", [$status, DB::getCurrentDateTime(), $rid]);
+
+                // get the last trace record
+                $t = DB::run("SELECT * FROM request_tracer WHERE rid = ? AND destination_uid_type = 'Inspector' AND status = 'Pending' ORDER BY tracer_no DESC", [$rid]);
+                $trow = $t->fetch();
+                $tracer_no = $trow["tracer_no"];
+
+                // update the previous trace
+                DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, $status, $trow["tid"]]);
+
+                // create another trace entry
+                DB::run("INSERT request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'Administrator', 'Pending']);
                 $output["msg"] = true;
             }
         }

@@ -108,14 +108,10 @@
                         if($f){
               ?>
               <div class="alert alert-success">
-                <strong>Success!</strong> Your purchase order has been submitted. Thank you! <a href="list_requests.php">Go back</a>
+                <strong>Success!</strong> Your purchase order has been submitted for approval. Thank you! <a href="list_requests.php">Go back</a>
               </div>
               <?php
                         }
-
-
-                        // update request to processing
-                        DB::run("UPDATE request SET status = 'Processing', updated_at = ? WHERE rid = ?", [DB::getCurrentDateTime(), $_GET["rid"]]);
 
                         // get last trace
                         $l = DB::run("SELECT * FROM request_tracer WHERE rid = ? AND destination_uid_type = 'Administrator' AND destination_uid IS NULL ORDER BY tracer_no DESC", [$_GET["rid"]]);
@@ -124,8 +120,12 @@
                         // update last trace
                         DB::run("UPDATE request_tracer SET destination_uid = ? WHERE tid = ?", [$_SESSION["uid"], $lrow["tid"]]);
 
-                        // insert next trace (for inspector)
-                        DB::run("INSERT INTO request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($lrow["tracer_no"]) + 1, $_GET["rid"], $_SESSION["uid"], 'Inspector', 'Pending']);
+                        // forward to regional director for approval
+                        DB::run("INSERT INTO request_tracer(tracer_no, rid, source_uid, destination_uid_type, status, remarks) VALUES(?, ?, ?, ?, ?, ?)", [intval($lrow["tracer_no"]) + 1, $_GET["rid"], $_SESSION["uid"], 'Regional Director', 'Pending', "Purchase Order"]);
+
+
+                        // TODOIMP: REMOVE THIS (Transfer to regional director side after approval)
+                        // DB::run("INSERT INTO request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($lrow["tracer_no"]) + 1, $_GET["rid"], $_SESSION["uid"], 'Inspector', 'Pending']);
 
 
                       }
@@ -223,6 +223,225 @@
               </div>
               <?php
                     }
+                  }elseif($_GET["type"] == "make_issuance_report" && $_GET["rid"] != "" && md5($_GET["rid"]) == $_GET["h"]){
+                    if(isset($_POST["submitReport"])){
+                      $par_no = strtoupper($_POST["par_no"]);
+                      $ics_no = strtoupper($_POST["ics_no"]);
+                      // item
+                      if(isset($_POST["report_item_ics"])){
+                        $report_item_ics = $_POST["report_item_ics"];
+                      }else{
+                        $report_item_ics = [];
+                      }
+                      if(isset($_POST["report_item_par"])){
+                        $report_item_par = $_POST["report_item_par"];
+                      }else{
+                        $report_item_par = [];
+                      }
+
+                      // number
+                      if(isset($_POST["ics_item_no"])){
+                        $ics_item_no = $_POST["ics_item_no"];
+                      }else{
+                        $ics_item_no = [];
+                      }
+                      if(isset($_POST["par_item_no"])){
+                        $par_item_no = $_POST["par_item_no"];
+                      }else{
+                        $par_item_no = [];
+                      }
+                      $uid = $_SESSION["uid"];
+
+                      if(count($report_item_ics) > 0){
+                        $riid = explode(",", $report_item_ics[0])[0];
+                      }else{
+                        $riid = explode(",", $report_item_par[0])[0];
+                      }
+
+                      // get a rid from a sample
+                      $r = DB::run("SELECT * FROM request_items WHERE riid = ?", [$riid]);
+                      $rrow = $r->fetch();
+                      $rid = $rrow["rid"];
+                      
+                      // update request table
+                      DB::run("UPDATE request SET status = ?, updated_at = ? WHERE rid = ?", ['Ready', DB::getCurrentDateTime(), $rid]);
+
+                      // // get the last trace record
+                      $t = DB::run("SELECT * FROM request_tracer WHERE rid = ? AND destination_uid_type = 'Administrator' ORDER BY tracer_no DESC", [$rid]);
+                      $trow = $t->fetch();
+                      $tracer_no = $trow["tracer_no"];
+
+                      // get the uid of the request
+                      $u = DB::run("SELECT * FROM request WHERE rid = ?", [$rid]);
+                      $destin_uid = $u->fetch()["uid"];
+
+                      // create another trace entry
+                      DB::run("INSERT request_tracer(tracer_no, rid, source_uid, destination_uid_type, destination_uid, status) VALUES(?, ?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'User', $destin_uid, 'Ready']);
+
+                      // get the requested qty : ics
+                      for($i = 0; $i < count($report_item_ics); $i++){
+                        $item = explode(",", $report_item_ics[$i]);
+
+                        $g = DB::run("SELECT * FROM request_items WHERE riid = ?", [$item[0]]);
+                        $grow = $g->fetch();
+
+                        // deduct the qty from the main table
+                        DB::run("UPDATE supplies_equipment SET item_qty = item_qty - ?, updated_at = ? WHERE itemid = ?", [$grow["requested_qty"], DB::getCurrentDateTime(), $grow["itemid"]]);
+
+                        // insert transaction entry
+                        DB::run("INSERT INTO supplies_equipment_transaction(transaction_type, riid, destination_uid, item_qty, remarks, report_type, report_item_no, report_overall_no) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", ['Out', $grow["riid"], $destin_uid, $grow["requested_qty"], 'Request', $item[1], $ics_item_no[$i], $item["1"]]);
+                      }
+
+                      // get the requested qty : par
+                      for($i = 0; $i < count($report_item_par); $i++){
+                        $item = explode(",", $report_item_par[$i]);
+
+                        $g = DB::run("SELECT * FROM request_items WHERE riid = ?", [$item[0]]);
+                        $grow = $g->fetch();
+
+                        // deduct the qty from the main table
+                        DB::run("UPDATE supplies_equipment SET item_qty = item_qty - ?, updated_at = ? WHERE itemid = ?", [$grow["requested_qty"], DB::getCurrentDateTime(), $grow["itemid"]]);
+
+                        // insert transaction entry
+                        DB::run("INSERT INTO supplies_equipment_transaction(transaction_type, riid, destination_uid, item_qty, remarks, report_type, report_item_no, report_overall_no) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", ['Out', $grow["riid"], $destin_uid, $grow["requested_qty"], 'Request', $item[1], $par_item_no[$i], $item["1"]]);
+                      }
+                ?>
+                <div class="alert alert-success">
+                    <strong>Success!</strong> Report has been prepared and ready to issued. <a href="list_requests.php">Go back</a>
+                </div>
+                <?php
+
+                    }else{
+                      $report_items = [];
+
+                      $p = DB::run("SELECT * FROM purchase_order WHERE rid = ?", [$_GET["rid"]]);
+                      while($prow = $p->fetch()){
+                        $i = DB::run("SELECT * FROM purchase_order_items poi JOIN request_items ri ON poi.riid = ri.riid JOIN item_dictionary id ON ri.itemid = id.itemid WHERE poi.poid = ?", [$prow["poid"]]);
+                        while($irow = $i->fetch()){
+                          $temp = $irow;
+                          if($irow["item_type"] == "Consumable"){
+                            $temp["report_type"] = "ICS";
+                          }else{
+                            $temp["report_type"] = "PAR";
+                          }
+                          array_push($report_items, $temp);
+                        }
+                      }
+                ?>
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <div class="x_panel">
+                    <div class="x_title">
+                      <h2>Prepare Issuance Report</h2>
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                      <form action="<?php echo $_SERVER["REQUEST_URI"]; ?>" method="POST">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <table class="table table-striped par">
+                              <h3>Property Acknowledgement Receipt</h3>
+                              <div class="form-group">
+                                <label>PAR No.</label>
+                                <input type="text" name="par_no" class="form-control">
+                              </div>
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Item No.</th>
+                                  <th>Item Name/Description</th>
+                                  <th>Quantity</th>
+                                  <th>Unit of Measure</th>
+                                  <th>Unit Cost</th>
+                                  <th>Total</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <?php
+                                  for ($i=0; $i < count($report_items); $i++) { 
+                                    if($report_items[$i]["report_type"] == "PAR"){
+                                ?>
+                                <tr>
+                                  <td><?php echo $i + 1; ?></td>
+                                  <td>
+                                      <input type="text" class="form-control" name="par_item_no[]" required>
+                                  </td>
+                                  <td><?php echo $report_items[$i]["item_name"] . "(" . $report_items[$i]["item_description"] . ")"; ?></td>
+                                  <td><?php echo $report_items[$i]["requested_qty"]; ?></td>
+                                  <td><?php echo $report_items[$i]["requested_unit"]; ?></td>
+                                  <td><?php echo $report_items[$i]["unit_cost"]; ?></td>
+                                  <td><?php echo $report_items[$i]["total_cost"]; ?></td>
+                                  <td>
+                                      <button class="btn btn-primary btn-sm" onclick="transferItems(this);">>></button>
+                                      <input type="hidden" name="report_item_par[]" class="form-control item" value="<?php echo $report_items[$i]["riid"] . ",par"; ?>">
+                                  </td>
+                                </tr>
+                                <?php
+                                    }
+                                  }
+                                ?>
+                              </tbody>
+                            </table>
+                          </div>
+                          <div class="col-md-6">
+                            <h3>Inventory Custodian Slip</h3>
+                            <div class="form-group">
+                              <label>ICS No.</label>
+                              <input type="text" name="ics_no" class="form-control">
+                            </div>
+                            <table class="table table-striped ics">
+                              <thead>
+                                <tr>
+                                  <th>Actions</th>
+                                  <th>#</th>
+                                  <th>Item No.</th>
+                                  <th>Item Name/Description</th>
+                                  <th>Quantity</th>
+                                  <th>Unit of Measure</th>
+                                  <th>Unit Cost</th>
+                                  <th>Total</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <?php
+                                  for ($i=0; $i < count($report_items); $i++) { 
+                                    if($report_items[$i]["report_type"] == "ICS"){
+                                ?>
+                                <tr>
+                                  <td>
+                                      <button class="btn btn-primary btn-sm" onclick="transferItems(this);"><<</button>
+                                      <input type="hidden" name="report_item_ics[]" class="form-control item" value="<?php echo $report_items[$i]["riid"] . ",ics"; ?>">
+                                  </td>
+                                  <td><?php echo $i + 1; ?></td>
+                                  <td>
+                                      <input type="text" class="form-control" name="ics_item_no[]" required>
+                                  </td>
+                                  <td><?php echo $report_items[$i]["item_name"] . "(" . $report_items[$i]["item_description"] . ")"; ?></td>
+                                  <td><?php echo $report_items[$i]["requested_qty"]; ?></td>
+                                  <td><?php echo $report_items[$i]["requested_unit"]; ?></td>
+                                  <td><?php echo $report_items[$i]["unit_cost"]; ?></td>
+                                  <td><?php echo $report_items[$i]["total_cost"]; ?></td>
+                                </tr>
+                                <?php
+                                    }
+                                  }
+                                ?>
+                              </tbody>
+                            </table>
+                          </div>
+                          <hr/>
+                          <div class="row">
+                            <div class="col-md-12 text-right">
+                              <input type="submit" name="submitReport" value="Save" class="btn btn-primary">
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+                <?php
+                    }
                   }else{
               ?>
               <div class="alert alert-danger">
@@ -243,38 +462,6 @@
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
-                    <?php
-                        if(isset($_POST["submit_cat"])){
-                            $cat_code = $_POST["cat_code"];
-                            $cat_name = strtoupper($_POST["cat_name"]);
-                            $cat_descrip = strtoupper($_POST["cat_descrip"]);
-
-                            $c = DB::run("INSERT INTO item_category(cat_code, cat_name, cat_descrip) VALUES(?, ?, ?)", [$cat_code, $cat_name, $cat_descrip]);
-                            if($c->rowCount() > 0){
-                    ?>
-                    <div class="alert alert-success">
-                        <strong>Success!</strong> Data has been added
-                    </div>
-                    <?php
-                            }
-                        }
-
-                        if(isset($_POST["update_cat"])){
-                          $catid = $_POST["catid"];
-                          $cat_code = $_POST["cat_code"];
-                          $cat_name = strtoupper($_POST["cat_name"]);
-                          $cat_descrip = strtoupper($_POST["cat_descrip"]);
-
-                          $u = DB::run("UPDATE item_category SET cat_code = ?, cat_name = ?, cat_descrip = ? WHERE catid = ?", [$cat_code, $cat_name, $cat_descrip, $catid]);
-                          if($u->rowCount() > 0){
-                    ?>
-                    <div class="alert alert-success">
-                      <strong>Success!</strong> Category has been updated
-                    </div>
-                    <?php
-                          }
-                        }
-                    ?>
                      <table id="dtList" class="table table-striped table-bordered">
                         <thead>
                           <tr>
