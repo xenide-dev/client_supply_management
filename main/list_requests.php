@@ -1,5 +1,7 @@
 <?php
   include "connection/connection.php";
+  require_once('phpqrcode/qrlib.php');
+
   session_start();
 
   if(!isset($_SESSION["username"])){
@@ -225,6 +227,7 @@
                     }
                   }elseif($_GET["type"] == "make_issuance_report" && $_GET["rid"] != "" && md5($_GET["rid"]) == $_GET["h"]){
                     if(isset($_POST["submitReport"])){
+
                       $par_no = strtoupper($_POST["par_no"]);
                       $ics_no = strtoupper($_POST["ics_no"]);
                       // item
@@ -258,7 +261,7 @@
                         $riid = explode(",", $report_item_par[0])[0];
                       }
 
-                      // get a rid from a sample
+                      // get the rid from a sample
                       $r = DB::run("SELECT * FROM request_items WHERE riid = ?", [$riid]);
                       $rrow = $r->fetch();
                       $rid = $rrow["rid"];
@@ -289,7 +292,7 @@
                         DB::run("UPDATE supplies_equipment SET item_qty = item_qty - ?, updated_at = ? WHERE itemid = ?", [$grow["requested_qty"], DB::getCurrentDateTime(), $grow["itemid"]]);
 
                         // insert transaction entry
-                        DB::run("INSERT INTO supplies_equipment_transaction(transaction_type, riid, destination_uid, item_qty, remarks, report_type, report_item_no, report_overall_no) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", ['Out', $grow["riid"], $destin_uid, $grow["requested_qty"], 'Request', $item[1], $ics_item_no[$i], $item["1"]]);
+                        DB::run("INSERT INTO supplies_equipment_transaction(transaction_type, riid, destination_uid, item_qty, remarks, report_type, report_item_no, report_overall_no) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", ['Out', $grow["riid"], $destin_uid, $grow["requested_qty"], 'Request', $item[1], $ics_item_no[$i], $ics_no]);
                       }
 
                       // get the requested qty : par
@@ -303,7 +306,23 @@
                         DB::run("UPDATE supplies_equipment SET item_qty = item_qty - ?, updated_at = ? WHERE itemid = ?", [$grow["requested_qty"], DB::getCurrentDateTime(), $grow["itemid"]]);
 
                         // insert transaction entry
-                        DB::run("INSERT INTO supplies_equipment_transaction(transaction_type, riid, destination_uid, item_qty, remarks, report_type, report_item_no, report_overall_no) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", ['Out', $grow["riid"], $destin_uid, $grow["requested_qty"], 'Request', $item[1], $par_item_no[$i], $item["1"]]);
+                        DB::run("INSERT INTO supplies_equipment_transaction(transaction_type, riid, destination_uid, item_qty, remarks, report_type, report_item_no, report_overall_no) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", ['Out', $grow["riid"], $destin_uid, $grow["requested_qty"], 'Request', $item[1], $par_item_no[$i], $par_no]);
+                        $lastID = DB::getLastInsertedID();
+
+                        // generate qr code | iterate based on the number of items
+                        for ($i=0; $i < $grow["requested_qty"]; $i++) { 
+                          $value = $par_item_no[$i] . "_" . (($i < 10) ? "0" . $i : $i);
+                          $path = $par_item_no[$i] . "_" . (($i < 10) ? "0" . $i : $i) . "_" . date("Y_m_d_H_i_s");
+                          $path = trim($path);
+
+                          // insert the data to database
+                          $iq = DB::run("INSERT INTO supplies_equipment_transaction_qr_collection(stid, item_number, qr_path) VALUES(?, ?, ?)", [$lastID, $value, $path . ".png"]);
+                          if($iq->rowCount() > 0){
+                            $rpath = "qr_codes_images/" . $path . ".png";
+                            QRcode::png($value, $rpath);
+                          }
+                          
+                        }
                       }
                 ?>
                 <div class="alert alert-success">
@@ -335,6 +354,9 @@
                       <div class="clearfix"></div>
                     </div>
                     <div class="x_content">
+                      <div class="alert alert-warning">
+                        <strong>Note!</strong> QR Code will be automatically generated if there is an item under property acknowledgement receipt.
+                      </div>
                       <form action="<?php echo $_SERVER["REQUEST_URI"]; ?>" method="POST">
                         <div class="row">
                           <div class="col-md-6">
@@ -451,7 +473,7 @@
                   }
                 }else{
               ?>
-              <!-- Supplies List -->
+              <!-- Request List -->
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="x_panel">
                   <div id="loading_modal">
@@ -511,6 +533,37 @@
                           </div>
                         </div>
                       </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- List of Other Requests (like transferring, etc) -->
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                  <div class="loading_modal">
+                    <div class="loading-circle"></div>
+                  </div>
+                  <div class="x_title">
+                    <h2>List of Other Requests</h2>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                     <table id="dtOtherList" class="table table-striped table-bordered">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Requested By</th>
+                            <th>Issued To</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <!-- <th width="300">Actions</th> -->
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
                   </div>
                 </div>
               </div>

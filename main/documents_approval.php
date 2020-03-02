@@ -86,6 +86,7 @@
                           </tr>
                         </thead>
                         <tbody>
+                          <!-- For Regular Request -->
                           <?php
                             $retrieve = DB::run("SELECT t.status, t.created_at, r.request_no, r.request_type, u.fname, u.mname, u.lname, u.midinit, r.request_purpose, t.rid, t.tid, t.tracer_no, t.remarks FROM request_tracer t JOIN request r ON t.rid = r.rid JOIN user_accounts u ON t.source_uid = u.uid WHERE t.destination_uid_type = 'Regional Director' AND t.status = 'Pending'");
                             while ($row = $retrieve->fetch()) {
@@ -142,6 +143,40 @@
                           </tr>
                           <?php
                             }
+                          ?>
+
+                          <!-- For special request like transfer -->
+                          <?php
+                            // get all out transaction that has a transfer request
+                            $t = DB::run("SELECT * FROM supplies_equipment_transaction st JOIN user_accounts ua ON st.requested_by_uid = ua.uid WHERE transaction_type = 'Out' AND transaction_status LIKE '%Transfer%'");
+                            while($trow = $t->fetch()){
+                          ?>
+                          <tr>
+                              <td><?php echo $trow["updated_at"]; ?></td>
+                              <td>N/A</td>
+                              <td>Transfer Request</td>
+                              <td><?php echo $trow["lname"] . ", " . $trow["fname"] . " " . $trow["midinit"]; ?></td>
+                              <td><?php echo $trow["transaction_reason"]; ?></td>
+                              <td>
+                                <?php
+                                  $tempText = explode("-", $trow["transaction_status"]); 
+                                  echo $tempText[3] . " Transfer to " . $tempText[2] . " (" . $tempText[1] . ")"; 
+                                ?>
+                              </td>
+                              <td>
+                                <a href="#" class="btn btn-success btn-xs" onclick="loadData(<?php echo $trow['stid']; ?>, 'transfer', '#requestItemsContainer tbody');" data-toggle="modal" data-target=".view_request"><span class="fa fa-search"></span> View Item</a>
+                                <?php
+                                  if(strpos($trow["transaction_status"], "Pending") !== false){
+                                ?>
+                                <button type="button" class="btn btn-success btn-xs row_<?php echo $trow['stid']; ?>" onclick="processTransfer(<?php echo $trow['stid']; ?>, 'Approved', this);">Approved!</button>
+                                <button type="button" class="btn btn-danger btn-xs row_<?php echo $trow['stid']; ?>" onclick="processTransfer(<?php echo $trow['stid']; ?>, 'Disapproved', this);">Disapproved!</button>
+                                <?php
+                                  }
+                                ?>
+                              </td>
+                          </tr>
+                          <?php
+                            }  
                           ?>
                         </tbody>
                       </table>

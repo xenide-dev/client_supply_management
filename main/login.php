@@ -77,7 +77,7 @@
             <img src="images/logo.png" alt="Local Government Unit of Aroroy, Masbate" width="250" height="250">
           </div>
           <section class="login_content">
-            <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST">
+            <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate>
               <h1>Welcome User</h1>
               <?php
                 if($error){
@@ -91,10 +91,10 @@
                 }
               ?>
               <div>
-                <input type="text" name="username" class="form-control" placeholder="Username" required="" />
+                <input type="text" name="username" class="form-control" placeholder="Username" data-parsley-required />
               </div>
               <div>
-                <input type="password" name="password" class="form-control" placeholder="Password" required="" />
+                <input type="password" name="password" class="form-control" placeholder="Password" data-parsley-required />
               </div>
               <div>
                 <button type="submit" class="btn btn-default" href="index.html" name="submit">Submit</button>
@@ -120,6 +120,11 @@
       </div>
     </div>
   </body>
+  
+  <!-- jQuery -->
+  <script src="../vendors/jquery/dist/jquery.min.js"></script>
+  <!-- Parsley -->
+  <script src="../vendors/parsleyjs/dist/parsley.min.js"></script>
   <script>
   if ( window.history.replaceState ) {
     window.history.replaceState( null, null, window.location.href );

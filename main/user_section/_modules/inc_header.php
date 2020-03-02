@@ -16,13 +16,13 @@
                     <a href="index.php" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">Supplies</a>
+                    <a href="list_supplies.php" class="nav-link">Supplies</a>
                 </li>
                 <li class="nav-item">
                     <a href="my_request.php" class="nav-link">My Requests</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">My Equipment</a>
+                    <a href="my_equipment.php" class="nav-link">My Equipment</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Create Request</a>

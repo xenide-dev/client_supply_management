@@ -42,7 +42,7 @@
                                             if(md5($_GET["rid"]) == $_GET["h"]){
                                                 $r = DB::run("SELECT * FROM request WHERE rid = ?", [$_GET["rid"]]);
                                                 $row = $r->fetch();
-                                                echo "<a href='my_request.php'>My Requests </a>> " . $row["request_no"];
+                                                echo "<a href='my_request.php'>My Requests </a>> " . $row["request_type"] . " | " . $row["request_no"];
                                             }else{
                                                 echo "My Requests ";
                                             }
@@ -156,6 +156,7 @@
                                             <thead>
                                                 <tr>
                                                     <th>Request No.</th>
+                                                    <th>Type</th>
                                                     <th>Date</th>
                                                     <th>Status</th>
                                                     <th>Actions</th>
@@ -189,10 +190,20 @@
                                                 ?>
                                                 <tr>
                                                     <td><?php echo $lrow["request_no"]; ?></td>
+                                                    <td><?php echo $lrow["request_type"]; ?></td>
                                                     <td><?php echo DB::formatDateTime($lrow["created_at"]); ?></td>
                                                     <td><?php echo $status; ?></td>
                                                     <td>
                                                         <button class="btn btn-primary btn-xs" onclick="loadData(<?php echo $lrow['rid']; ?>, 'request', '#requestItemsContainer tbody');" data-toggle="modal" data-target=".view_request">View Items</button>
+                                                        <?php
+                                                            if($lrow["request_type"] == "Purchase Request"){
+                                                                $rid = $lrow["rid"];
+                                                                $h = md5($rid);
+                                                        ?>
+                                                        <a href="_modules/pdf_generator/pdf_generate_purchase_request.php?rid=<?php echo $rid; ?>&h=<?php echo $h; ?>" class="btn btn-primary btn-xs" target="_blank">Purchase Request (PDF)</a>
+                                                        <?php
+                                                            }
+                                                        ?>
                                                         <a href="my_request.php?rid=<?php echo $lrow['rid']; ?>&h=<?php echo md5($lrow['rid']); ?>" class="btn btn-success btn-xs">Trace</a>
                                                         <?php
                                                             // display the button while the status is pending

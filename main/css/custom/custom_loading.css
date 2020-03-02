@@ -1,4 +1,4 @@
-#loading_modal {
+#loading_modal, .loading_modal {
     display: block;
     background-color: black;
     opacity: 0.6;
@@ -10,7 +10,7 @@
     border-radius: inherit;
     z-index: 999;
 }
-#loading-circle {
+#loading-circle, .loading-circle {
     display: block;
     position: absolute;
     top: 0;

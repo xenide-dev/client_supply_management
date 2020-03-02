@@ -72,9 +72,10 @@ $(document).ready(function(){
                 button: "Okay!",
             });
         }else{
+            var rtype = $(this).prop("class") == "frmPurchase" ? "purchase" : "requisition";
             if(true === $('form').parsley().isValid()){
                 const fetchPromises = swal({
-                    title: "Do you want to submit your request?",
+                    title: "Do you want to submit your " + rtype + " request?",
                     // text: "Once submitted, the data cannot be undone!",
                     icon: "warning",
                     buttons: ["No", "Yes"],

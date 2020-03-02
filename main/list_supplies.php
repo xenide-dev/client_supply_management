@@ -178,38 +178,6 @@
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
-                    <?php
-                        if(isset($_POST["submit_cat"])){
-                            $cat_code = $_POST["cat_code"];
-                            $cat_name = strtoupper($_POST["cat_name"]);
-                            $cat_descrip = strtoupper($_POST["cat_descrip"]);
-
-                            $c = DB::run("INSERT INTO item_category(cat_code, cat_name, cat_descrip) VALUES(?, ?, ?)", [$cat_code, $cat_name, $cat_descrip]);
-                            if($c->rowCount() > 0){
-                    ?>
-                    <div class="alert alert-success">
-                        <strong>Success!</strong> Data has been added
-                    </div>
-                    <?php
-                            }
-                        }
-
-                        if(isset($_POST["update_cat"])){
-                          $catid = $_POST["catid"];
-                          $cat_code = $_POST["cat_code"];
-                          $cat_name = strtoupper($_POST["cat_name"]);
-                          $cat_descrip = strtoupper($_POST["cat_descrip"]);
-
-                          $u = DB::run("UPDATE item_category SET cat_code = ?, cat_name = ?, cat_descrip = ? WHERE catid = ?", [$cat_code, $cat_name, $cat_descrip, $catid]);
-                          if($u->rowCount() > 0){
-                    ?>
-                    <div class="alert alert-success">
-                      <strong>Success!</strong> Category has been updated
-                    </div>
-                    <?php
-                          }
-                        }
-                    ?>
                      <table id="dtList" class="table table-striped table-bordered">
                         <thead>
                           <tr>
@@ -225,36 +193,6 @@
                         <tbody>
                         </tbody>
                       </table>
-                      <div class="modal fade cat_up" tabindex="-1" role="dialog" aria-hidden="true">
-                        <div class="modal-dialog">
-                          <div class="modal-content">
-
-                            <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate id="frmCatUpdate">
-                              <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
-                                </button>
-                                <h4 class="modal-title" id="myModalLabel">Update Category</h4>
-                              </div>
-                              <div class="modal-body">
-                                <input type="text" name="catid" id="catid" style="display: none;">
-                                <label>Category Code: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="cat_code" id="cat_code" placeholder="Enter your text ..." required>
-                                <br/>
-                                <label>Category Name: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="cat_name" id="cat_name" placeholder="Enter your text ..." required>
-                                <br/>
-                                <label>Category Description: </label>
-                                <input type="text" class="form-control" name="cat_descrip" id="cat_descrip" placeholder="Enter your text ...">
-                                <br/>
-                              </div>
-                              <div class="modal-footer">
-                                <input type="submit" name="update_cat" value="Save Changes" class="btn btn-success">
-                              </div>
-                            </form>
-
-                          </div>
-                        </div>
-                      </div>
                       <div>
                         <a href="list_supplies.php?type=make_request" class="btn btn-success btn-xs"><span class="fa fa-plus"> Make Purchase Request</span></a>
                       </div>

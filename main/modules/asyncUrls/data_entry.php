@@ -102,6 +102,9 @@
                 $output["poid"] = $grow["poid"];
                 $output["rid"] = $grow["rid"];
 
+                // update the request for partial or incomplete
+                DB::run("UPDATE request SET status = 'Incomplete' WHERE rid = ?", [$grow["rid"]]);
+
                 // check if all items has been delivered
                 $output["done"] = true;
                 $c = DB::run("SELECT * FROM purchase_order_items WHERE poid = ?", [$grow["poid"]]);
@@ -220,6 +223,57 @@
 
                 // create another trace entry
                 DB::run("INSERT request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'Administrator', 'Pending']);
+                $output["msg"] = true;
+            }
+        }elseif($_POST["type"] == "equipments"){
+            if($_POST["operation"] == "performTransfer"){
+                $stid = $_POST["stid"];
+                $riid = $_POST["riid"];
+                $from_uid = $_POST["from_uid"];
+                $transfer_type = $_POST["transfer_type"];
+                $transfer_to = $_POST["transfer_to"];
+                $transfer_purpose = $_POST["transfer_purpose"];
+
+                // get the target user details
+                $u = DB::run("SELECT * FROM user_accounts WHERE uid = ?", [$transfer_to]);
+                $urow = $u->fetch();
+
+                $text = "Transfer-" . $transfer_type . "-" . $urow["lname"] . ", " . $urow["fname"] . " " . $urow["midinit"] . "-Pending";
+
+                // update the transaction
+                DB::run("UPDATE supplies_equipment_transaction SET updated_at = ?, transaction_status = ?, transaction_reason = ?, requested_by_uid = ?, target_uid = ? WHERE stid = ?", [DB::getCurrentDateTime(), $text, $transfer_purpose, $_SESSION["uid"], $transfer_to, $stid]);
+
+                $output["msg"] = true;
+            }
+        }elseif($_POST["type"] == "transfer"){
+            if($_POST["operation"] == "processRequest"){
+                $stid = $_POST["stid"];
+                $action = $_POST["action"];
+
+                // get the transfer details
+                $t = DB::run("SELECT * FROM supplies_equipment_transaction st JOIN user_accounts ua ON st.destination_uid = ua.uid WHERE st.stid = ?", [$stid]);
+                $trow = $t->fetch();
+
+                if($action == "Approved"){
+                    // update the text
+                    $tempText = str_replace("Pending", "Approved", $trow["transaction_status"]);
+                    DB::run("UPDATE supplies_equipment_transaction SET transaction_status = ? WHERE stid = ?", [$tempText, $stid]);
+
+                    $exText = explode("-", $tempText);
+                    $exText[2] = $trow["lname"] . ", " . $trow["fname"] . " " . $trow["midinit"];
+                    $newStatus = implode("-", $exText);
+                    // insert new transaction entry
+                    $i = DB::run("INSERT INTO supplies_equipment_transaction(created_at, transaction_type, riid, destination_uid, item_qty, remarks, item_status, report_type, report_item_no, report_overall_no, transaction_status, transaction_reason) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [DB::getCurrentDateTime(), "Out", $trow["riid"], $trow["target_uid"], $trow["item_qty"], "Transfer", null, $trow["report_type"], $trow["report_item_no"], $trow["report_overall_no"], $newStatus, $trow["transaction_reason"]]);
+                    $lastID = DB::getLastInsertedID();
+
+                    // update the items in qr table
+                    DB::run("UPDATE supplies_equipment_transaction_qr_collection SET stid = ? WHERE stid = ?", [$lastID, $stid]);
+                }elseif($action == "Disapproved"){
+                    // update the text
+                    $tempText = str_replace("Pending", "Disapproved", $trow["transaction_status"]);
+                    DB::run("UPDATE supplies_equipment_transaction SET transaction_status = ? WHERE stid = ?", [$tempText, $stid]);
+                }
+
                 $output["msg"] = true;
             }
         }

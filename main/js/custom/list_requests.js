@@ -1,6 +1,8 @@
 $(document).ready(function(){
     var t = $('#dtList').DataTable();
+    var o = $('#dtOtherList').DataTable();
     loadList(t);
+    loadOtherList(o);
 
     $("input[class*='rowC_']").on('keyup', function(){
         var val = parseFloat(($(this).val() == "" ? 0 : $(this).val()));
@@ -80,6 +82,95 @@ function loadList(t){
                     var issuance = `<a href="list_requests.php?type=make_issuance_report&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">Prepare Issuance Report</a>`;
                     var prepare_purchase_order = `<a href="list_requests.php?type=make_order&rid=` + element.rid + `" class="btn btn-success btn-xs" onclick="loadData(` + element.rid + `, 'item')" > Prepare Purchase Order</a>`;
                     var accept = `<button type="button" class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'request', 'Accepted', this)"> Accept</button>`;
+                    var printPAR = `<a href="modules/pdf_generator/generate_pdf.php?type=par&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs" target="_blank">PAR (PDF)</a>`;
+                    var printICS = `<a href="modules/pdf_generator/generate_pdf.php?type=ics&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs" target="_blank">ICS (PDF)</a>`;
+
+
+                    var requestedBy = element.lname + ", " + element.fname + " " + element.midinit;
+                    var status = "";
+                    if(element.status == "Pending"){
+                        status = '<span class="label label-warning">Pending</span>';
+                    }else if(element.status == "Approved"){
+                        status = '<span class="label label-success">Approved</span>';
+                    }else if(element.status == "Disapproved"){
+                        status = '<span class="label label-success">Disapproved</span>';
+                    }else if(element.status == "Delivered"){
+                        status = '<span class="label label-success">Delivered</span>';
+                    }else if(element.status == "Pending Items"){
+                        status = '<span class="label label-success">Pending Items</span>';
+                    }else if(element.status == "Processing"){
+                        status = '<span class="label label-warning">Processing</span>';
+                    }else if(element.status == "Inspected"){
+                        status = '<span class="label label-primary">Inspected</span>';
+                    }else if(element.status == "Ready"){
+                        status = '<span class="label label-success">Ready for Issuance</span>';
+                    }else if(element.status == "Accepted"){
+                        status = '<span class="label label-success">Accepted</span>';
+                    }else if(element.status == "Incomplete"){
+                        status = '<span class="label label-warning">Incomplete</span>';
+                    }
+
+                    var actions = view_items;
+                    if(element.request_type == "Requisition"){
+                        if(element.status == "Processing"){
+                            actions += issuance;
+                        }
+                    }else if(element.request_type == "Purchase Request"){
+                        if(element.status == "Approved"){
+                            actions += prepare_purchase_order;
+                        }else if(element.status == "Inspected"){
+                            actions += accept;
+                        }else if(element.status == "Accepted"){
+                            actions += issuance;
+                        }else if(element.status == "Ready" || element.status == "Delivered"){
+                            actions += printPAR + printICS;
+                        }
+                    }
+                    t.row.add([
+                        element.request_no,
+                        element.created_at,
+                        element.request_type,
+                        requestedBy,
+                        element.request_purpose,
+                        status,
+                        actions
+                    ]).draw();
+                });
+                loadingCircle.css({'display' : 'none'});
+                loadingModal.css({'display' : 'none'});
+            }else{
+                alert('Error');
+            }
+        }
+    });
+}
+
+function loadOtherList(t){
+    var loadingModal = $('.loading_modal');
+    var loadingCircle = $('.loading-circle');
+    loadingCircle.css({'display' : 'block'});
+    loadingModal.css({'display' : 'block'});
+    $.ajax({
+        method: 'POST',
+        url: 'modules/asyncUrls/retrieve_list.php',
+        dataType: 'JSON',
+        data: {
+            type: 'request',
+            operation: 'getAllOtherRequest'
+        },
+        success: function(data){
+            if(data.msg){
+                data.info.forEach(element => {
+                    // TODOIMP: UPDATE ACTIONS COLUMN
+                    var view_items = `<button class="btn btn-primary btn-xs" onclick="loadData(` + element.rid + `, 'request', '#requestItemsContainer tbody');" data-toggle="modal" data-target=".view_request">View Items</button>`;
+                    // var issuance = `<button class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'issuance', 'Ready', this)"> Ready for Issuance</button>`;
+                    var issuance = `<a href="list_requests.php?type=make_issuance_report&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">Prepare Issuance Report</a>`;
+                    var prepare_purchase_order = `<a href="list_requests.php?type=make_order&rid=` + element.rid + `" class="btn btn-success btn-xs" onclick="loadData(` + element.rid + `, 'item')" > Prepare Purchase Order</a>`;
+                    var accept = `<button type="button" class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'request', 'Accepted', this)"> Accept</button>`;
+                    var printPAR = `<a href="modules/pdf_generator/generate_pdf.php?type=par&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">PAR (PDF)</a>`;
+                    var printICS = `<a href="modules/pdf_generator/generate_pdf.php?type=ics&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">ICS (PDF)</a>`;
+
+
                     var requestedBy = element.lname + ", " + element.fname + " " + element.midinit;
                     var status = "";
                     if(element.status == "Pending"){
@@ -114,16 +205,19 @@ function loadList(t){
                             actions += accept;
                         }else if(element.status == "Accepted"){
                             actions += issuance;
+                        }else if(element.status == "Ready" || element.status == "Delivered"){
+                            actions += printPAR + printICS;
                         }
                     }
                     t.row.add([
-                        element.request_no,
                         element.created_at,
                         element.request_type,
-                        requestedBy,
-                        element.request_purpose,
-                        status,
-                        actions
+                        element.description,
+                        element.requested_by,
+                        element.issued_to,
+                        element.purpose,
+                        element.status,
+                        // actions
                     ]).draw();
                 });
                 loadingCircle.css({'display' : 'none'});

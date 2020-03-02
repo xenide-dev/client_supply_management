@@ -30,6 +30,33 @@ function loadData(id, tableName, containerID){
                 }
             }
         });
+    }else if(tableName == "transfer"){
+        $.ajax({
+            method: 'POST',
+            url: 'modules/asyncUrls/retrieve_list.php',
+            dataType: 'JSON',
+            data: {
+                type: 'transfer',
+                id: id,
+                operation: 'getAllItems'
+            },
+            success: function(data){
+                if(data.msg){
+                    $(containerID).empty();
+                    $.each( data.info, function( key, value ) {
+                        var temp = 
+                            `<tr>
+                                <th scope="row">` + (key + 1) + `</th>
+                                <td>` + value.item_code + `</td>
+                                <td>` + (value.item_name + " (" + value.item_description + ")") + `</td>
+                                <td>` + value.requested_qty + `</td>
+                                <td>` + value.requested_unit + `</td>
+                            </tr>`;
+                        $(containerID).append(temp);
+                    });
+                }
+            }
+        });
     }
 }
 
@@ -67,6 +94,44 @@ function processAction(tid, rid, uid, action, tracer_no, request_type, ref){
                         }
                         $("#dtList").dataTable().fnUpdate(temp,$(ref).parents('tr'),undefined,false);
                         $(".row_" + tid).remove();
+                        swal("Success!", "Request has been '" + action + "'", "success");
+                    }
+                }
+            });
+        }
+    });
+}
+
+function processTransfer(stid, action, ref){
+    swal({
+        title: "Are you sure you want to continue?",
+        text: 'Once you proceed, the process cannot be undone!',
+        icon: "warning",
+        buttons: ["No", "Yes"],
+        dangerMode: true,
+    }).then((value) => {
+        if(value){
+            // process ajax submission
+            $.ajax({
+                method: 'POST',
+                url: 'modules/asyncUrls/data_entry.php',
+                dataType: 'JSON',
+                data: {
+                    type: 'transfer',
+                    operation: 'processRequest',
+                    stid: stid,
+                    action: action,
+                },
+                success: function(data){
+                    if(data.msg){
+                        var temp = $("#dtList").DataTable().row($(ref).parents('tr')).data();
+                        if(action == "Approved"){
+                            temp[5] = temp[5].replace("Pending", "Approved");
+                        }else{
+                            temp[5] = temp[5].replace("Pending", "Disapproved");
+                        }
+                        $("#dtList").dataTable().fnUpdate(temp,$(ref).parents('tr'),undefined,false);
+                        $(".row_" + stid).remove();
                         swal("Success!", "Request has been '" + action + "'", "success");
                     }
                 }

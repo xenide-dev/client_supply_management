@@ -94,7 +94,7 @@
                                         }
                                     ?>
                                     <div class="card-body">
-                                        <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" id="frmForm">
+                                        <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" id="frmForm" class="frmPurchase">
                                             <div class="form-group">
                                                 <div class="row">
                                                     <div class="col-md-4">

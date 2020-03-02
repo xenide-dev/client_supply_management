@@ -67,7 +67,7 @@
         <?php
           if(strpos($privileges, 'list_equipment') !== false){
         ?>
-        <li><a href="#"><i class="fa fa-list"></i> List of Equipments</a></li>
+        <li><a href="list_equipments.php"><i class="fa fa-list"></i> List of Equipments</a></li>
         <?php
           }
         ?>
@@ -124,6 +124,12 @@
         <?php
           }
         ?>
+      </ul>
+    </div>
+    <div class="menu_section">
+      <h3>QR Management</h3>
+      <ul class="nav side-menu">
+        <li><a href="qr_reader.php"><i class="fa fa-qrcode"></i> QR Reader</a></li>
       </ul>
     </div>
     <?php
