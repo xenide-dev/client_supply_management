@@ -28,6 +28,12 @@
                     $irow = $i->fetch();
                     
                     $row["hash_val"] = md5($row["rid"]);
+
+                    if($row["user_type"] == "Administrator"){
+                        $row["isDone"] = true;
+                    }else{
+                        $row["isDone"] = false;
+                    }
                     // check if the last record is for approval of purchase order
                     if($irow["remarks"] != "Purchase Order"){
                         array_push($rows, $row);
@@ -67,9 +73,18 @@
         }elseif($_POST["type"] == "purchase"){
             if($_POST["operation"] == "getAll"){
                 // retrieve all purchase orders
+                $rows = [];
                 $r = DB::run("SELECT * FROM purchase_order po JOIN request r ON po.rid = r.rid JOIN user_accounts ua ON r.uid = ua.uid WHERE po.status = 'Pending' ORDER BY po.created_at ASC");
-                $row = $r->fetchAll();
-                $output["info"] = $row;
+                while($row = $r->fetch()){
+                    // check if particular purchase order has been approved by RD
+                    $p = DB::run("SELECT * FROM request_tracer WHERE rid = ? AND remarks = 'Purchase Order'", [$row["rid"]]);
+                    $prow = $p->fetch();
+
+                    if($prow["status"] == "Approved"){
+                        array_push($rows, $row);
+                    }
+                }
+                $output["info"] = $rows;
                 $output["msg"] = true;
             }elseif($_POST["operation"] == "getAllItems"){
                 $id = $_POST["id"];
@@ -160,6 +175,28 @@
                     $output["info"] = $qrow;
                 }
 
+                $output["msg"] = true;
+            }
+        }elseif($_POST["type"] == "ppmp"){
+            if($_POST["operation"] == "getAll"){
+                // retrieve all ppmps
+                $rows = [];
+
+                $p = DB::run("SELECT * FROM ppmp p JOIN user_accounts ua ON p.uid = ua.uid ORDER BY p.ppmp_year ASC");
+                while($prow = $p->fetch()){
+                    $prow["hash"] = md5($prow["pid"]);
+                    array_push($rows, $prow);
+                }
+
+                $output["info"] = $rows;
+                $output["msg"] = true;
+            }elseif($_POST["operation"] == "getAllItems"){
+                $pid = $_POST["pid"];
+
+                $p = DB::run("SELECT * FROM ppmp_items pi JOIN item_dictionary id ON pi.itemid = id.itemid WHERE pi.pid = ?", [$pid]);
+                $prow = $p->fetchAll();
+
+                $output["info"] = $prow;
                 $output["msg"] = true;
             }
         }

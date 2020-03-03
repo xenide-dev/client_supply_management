@@ -74,13 +74,19 @@
     }
 
     $in = DB::run("SELECT * FROM request_items ri JOIN item_dictionary id ON ri.itemid = id.itemid WHERE ri.rid = ?", [$_GET["rid"]]);
-    $par_no = "";
+    $par_no = $ics_no = "";
     while($rirow = $in->fetch()){
         // get the last transaction of item
         $t = DB::run("SELECT * FROM supplies_equipment_transaction WHERE riid = ? AND transaction_type = 'Out' AND report_type = 'par' ORDER BY created_at DESC", [$rirow["riid"]]);
         $trow = $t->fetch();
         if($trow !== false){
             $par_no = $trow["report_overall_no"];
+        }
+
+        $t = DB::run("SELECT * FROM supplies_equipment_transaction WHERE riid = ? AND transaction_type = 'Out' AND report_type = 'ics' ORDER BY created_at DESC", [$rirow["riid"]]);
+        $trow = $t->fetch();
+        if($trow !== false){
+            $ics_no = $trow["report_overall_no"];
         }
     }
     // =================================== get the data ===================================
@@ -167,7 +173,7 @@
         $pdf->MultiCell( 65, 0, "", $border = "B", $align = 'L', $fill = false, $ln = 0, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 6, $valign = 'M', $fitcell = true);
         $pdf->MultiCell( 51, 0, "", $border = 0, $align = 'L', $fill = false, $ln = 0, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 6, $valign = 'M', $fitcell = true);
         $pdf->MultiCell( 20, 0, "ICS No.:", $border = 0, $align = 'L', $fill = false, $ln = 0, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 6, $valign = 'M', $fitcell = true);
-        $pdf->MultiCell( 30, 0, $par_no, $border = 0, $align = 'L', $fill = false, $ln = 1, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 6, $valign = 'M', $fitcell = true);
+        $pdf->MultiCell( 30, 0, $ics_no, $border = 0, $align = 'L', $fill = false, $ln = 1, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 6, $valign = 'M', $fitcell = true);
 
         $pdf->ln();
 
@@ -182,7 +188,7 @@
 
         // table rows
 
-        $ri = DB::run("SELECT * FROM request_items ri JOIN item_dictionary id ON ri.itemid = id.itemid JOIN purchase_order_items poi ON ri.riid = poi.riid WHERE ri.rid = ?", [$_GET["rid"]]);
+        $ri = DB::run("SELECT * FROM request_items ri JOIN item_dictionary id ON ri.itemid = id.itemid WHERE ri.rid = ?", [$_GET["rid"]]);
         $occupied = 0;
         $date_issued = "";
         while($rirow = $ri->fetch()){
@@ -191,6 +197,24 @@
             $trow = $t->fetch();
             if($trow !== false){
                 if($trow["remarks"] != "Transfer"){
+                    // get the cost
+                    $c = DB::run("SELECT * FROM purchase_order_items WHERE riid = ?", [$rirow["riid"]]);
+                    if($crow = $c->fetch()){
+                        $rirow["unit_cost"] = $crow["unit_cost"];
+                        $rirow["total_cost"] = $crow["total_cost"];
+                    }else{
+                        $g = DB::run("SELECT * FROM request_items WHERE itemid = ? ORDER BY riid DESC", [$rirow["itemid"]]);
+                        while($grow = $g->fetch()){
+                            // get match
+                            $m = DB::run("SELECT * FROM purchase_order_items WHERE riid = ?", [$grow["riid"]]);
+                            if($mrow = $m->fetch()){
+                                $rirow["unit_cost"] = $mrow["unit_cost"];
+                                $rirow["total_cost"] = $mrow["unit_cost"] * $rirow["requested_qty"];
+                                break;
+                            }
+                        }
+                    }
+
                     $date_issued = date("d-M-Y", strtotime($trow["created_at"]));
                     $pdf->MultiCell( 20, 8, $trow["item_qty"], $border = 1, $align = 'C', $fill = false, $ln = 0, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 6, $valign = 'M', $fitcell = true);
                     $pdf->MultiCell( 15, 8, $rirow["requested_unit"], $border = 1, $align = 'C', $fill = false, $ln = 0, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 6, $valign = 'M', $fitcell = true);

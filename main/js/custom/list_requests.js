@@ -5,12 +5,17 @@ $(document).ready(function(){
     loadOtherList(o);
 
     $("input[class*='rowC_']").on('keyup', function(){
-        var val = parseFloat(($(this).val() == "" ? 0 : $(this).val()));
+        var thisVal = $(this).val().replace(/,/g, '');
+        $(this).val(formatCurrency(thisVal, false));
+
+        var val = parseFloat((thisVal == "" ? 0 : thisVal));
         var qtyClass = this.className.split(' ')[1].replace('C', 'Q');
         var qty = parseFloat($("." + qtyClass).text());
         var total = val * qty;
         var totalClass = this.className.split(' ')[1].replace('C', 'T');
-        $("." + totalClass).val(total);
+        $("." + totalClass).val(formatCurrency(total, true));
+
+        
     })
 
     // prevent credit deduction's form from submitting
@@ -29,6 +34,22 @@ $(document).ready(function(){
         });
     });
 });
+
+function formatCurrency(val, isIncludeDecimal){
+    if(isIncludeDecimal){
+        return new Intl.NumberFormat('en-PH', { style: 'decimal', currency: 'PHP', minimumFractionDigits: 2 }).format(val);
+    }else{
+        // get the whole number only
+        if(val.indexOf('.') > 0){
+            var wholeVal = val.substr(0, val.indexOf('.'));
+            var f = wholeVal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+            return f + val.substr(val.indexOf('.'));
+        }else{
+            return val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+        }
+    }
+}
+
 
 function loadData(id, tableName, containerID){
     if(tableName == 'request'){
@@ -114,6 +135,8 @@ function loadList(t){
                     if(element.request_type == "Requisition"){
                         if(element.status == "Processing"){
                             actions += issuance;
+                        }else if(element.status == "Ready" || element.status == "Delivered"){
+                            actions += printPAR + printICS;
                         }
                     }else if(element.request_type == "Purchase Request"){
                         if(element.status == "Approved"){
@@ -121,7 +144,9 @@ function loadList(t){
                         }else if(element.status == "Inspected"){
                             actions += accept;
                         }else if(element.status == "Accepted"){
-                            actions += issuance;
+                            if(!element.isDone){
+                                actions += issuance;
+                            }
                         }else if(element.status == "Ready" || element.status == "Delivered"){
                             actions += printPAR + printICS;
                         }

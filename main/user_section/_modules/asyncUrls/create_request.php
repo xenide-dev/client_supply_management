@@ -13,8 +13,8 @@
                         // check if there is some stock
                         $c = DB::run("SELECT * FROM supplies_equipment WHERE itemid = ?", [$arow["itemid"]]);
                         if($crow = $c->fetch()){
-                            if($crow["item_qty"] > 0){
-                                $arow["rem_qty"] = $crow["item_qty"];
+                            if($crow["available_qty"] > 0){
+                                $arow["rem_qty"] = $crow["available_qty"];
                                 array_push($items, $arow);
                             }
                         }
@@ -49,10 +49,17 @@
                 // check if there is some stock
                 $c = DB::run("SELECT * FROM supplies_equipment WHERE itemid = ?", [$row["itemid"]]);
                 if($crow = $c->fetch()){
-                    $row["rem_qty"] = $crow["item_qty"];
+                    $row["rem_qty"] = $crow["available_qty"];
                 }
 
                 $output["info"] = $row;
+                $output["msg"] = true;
+            }elseif($_POST["operation"] == "getAllItemPPMP"){
+                // retrieve all items that have a stock
+                $a = DB::run("SELECT * FROM item_dictionary id LEFT JOIN item_category ic ON id.catid = ic.catid ORDER BY id.item_name ASC");
+                $arow = $a->fetchAll();
+                
+                $output["info"] = $arow;
                 $output["msg"] = true;
             }
         }

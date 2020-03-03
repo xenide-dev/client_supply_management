@@ -311,6 +311,7 @@
                                     <label>Supply and Equipment:</label>
                                     <div class="form-group">
                                       <label><input type="checkbox" name="privileges[]" id="purchase_order" class="js-switch" value="purchase_order" /> Manage Purchase Orders</label><br/>
+                                      <label><input type="checkbox" name="privileges[]" id="list_ppmp" class="js-switch" value="list_ppmp" /> List of PPMPs</label><br/>
                                       <label><input type="checkbox" name="privileges[]" id="list_supplies" class="js-switch" value="list_supplies" /> List of Supplies</label><br/>
                                       <label><input type="checkbox" name="privileges[]" id="list_equipment" class="js-switch" value="list_equipment" /> List of Equipments</label><br/>
                                       <label><input type="checkbox" name="privileges[]" id="list_request" class="js-switch" value="list_request" /> List of Requests</label><br/>
@@ -420,6 +421,7 @@
                                       <label>Supply and Equipment:</label>
                                       <div class="form-group">
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="purchase_order" /> Manage Purchase Orders</label><br/>
+                                        <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_ppmp" /> List of PPMPs</label><br/>
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_supplies" /> List of Supplies</label><br/>
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_equipment" /> List of Equipments</label><br/>
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_request" /> List of Requests</label><br/>

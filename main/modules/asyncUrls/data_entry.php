@@ -61,15 +61,33 @@
                         $status = "Approved";
                     }
                 }else{
-                    $status = $action;
+                    $status = "Disapproved";
                 }
 
                 // update the request entry status
                 DB::run("UPDATE request SET status = ?, updated_at = ? WHERE rid = ?", [$status, DB::getCurrentDateTime(), $rid]);
 
+                // deduct the stock once approved
+                if($request_type == "Requisition"){
+                    if($action == "Approved"){
+                        // get all the requested items
+                        $rq = DB::run("SELECT * FROM request_items WHERE rid = ?", [$rid]);
+                        while($rqrow = $rq->fetch()){
+                            // deduct
+                            DB::run("UPDATE supplies_equipment SET available_qty = available_qty - ? WHERE itemid = ?", [$rqrow["requested_qty"], $rqrow["itemid"]]);
+                        }
+                    }
+                }
+
                 // update the previous trace
                 if($request_type == "Requisition" || $request_type == "Purchase Request"){
-                    DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, $status, $tid]);
+                    if($status == "Processing"){
+                        DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, "Approved", $tid]);
+                    }elseif($status == "Approved"){
+                        DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, "Approved", $tid]);
+                    }else{
+                        DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, "Disapproved", $tid]);
+                    }
                 }elseif($request_type == "Purchase Order"){
                     DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, 'Approved', $tid]);
                 }
@@ -82,7 +100,6 @@
                         // create another trace entry : forwarded to Inspector (if purchase order);
                         DB::run("INSERT INTO request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'Inspector', 'Pending']);
                     }
-
                 }
 
                 $output["msg"] = true;
@@ -141,7 +158,7 @@
                     $c = DB::run("SELECT * FROM supplies_equipment WHERE itemid = ?", [$rirow["itemid"]]);
                     if($crow = $c->fetch()){
                         // update the entry
-                        DB::run("UPDATE supplies_equipment SET item_qty = item_qty + ?, updated_at = ? WHERE sid = ?", [$rirow["requested_qty"], DB::getCurrentDateTime(), $crow["sid"]]);
+                        DB::run("UPDATE supplies_equipment SET item_qty = item_qty + ?, available_qty = available_qty + ?, updated_at = ? WHERE sid = ?", [$rirow["requested_qty"], $rirow["requested_qty"], DB::getCurrentDateTime(), $crow["sid"]]);
 
                         // get poid
                         $p = DB::run("SELECT * FROM purchase_order WHERE rid = ?", [$rid]);
@@ -151,7 +168,7 @@
                         DB::run("INSERT INTO supplies_equipment_transaction(transaction_type, sid, poid, remarks) VALUES(?, ?, ?, ?)", ['In', $crow["sid"], $prow["poid"], "Purchase Order"]);
                     }else{
                         // insert new entry
-                        DB::run("INSERT INTO supplies_equipment(itemid, item_qty, item_unit, reorder_point) VALUES(?, ?, ?, ?)", [$rirow["itemid"], $rirow["requested_qty"], $rirow["requested_unit"], 30]);
+                        DB::run("INSERT INTO supplies_equipment(itemid, item_qty, available_qty, item_unit, reorder_point) VALUES(?, ?, ?, ?, ?)", [$rirow["itemid"], $rirow["requested_qty"], $rirow["requested_qty"], $rirow["requested_unit"], 30]);
                         $sid = DB::getLastInsertedID();
                         
                         // get poid

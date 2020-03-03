@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Mar 01, 2020 at 04:56 AM
+-- Generation Time: Mar 03, 2020 at 02:46 PM
 -- Server version: 5.7.14
 -- PHP Version: 7.4.2
 
@@ -488,6 +488,55 @@ INSERT INTO `item_dictionary` (`itemid`, `catid`, `item_code`, `item_name`, `ite
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `ppmp`
+--
+
+DROP TABLE IF EXISTS `ppmp`;
+CREATE TABLE IF NOT EXISTS `ppmp` (
+  `pid` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(11) DEFAULT NULL,
+  `ppmp_year` int(11) DEFAULT NULL,
+  `total_supplies` int(11) DEFAULT NULL,
+  `total_equipments` int(11) DEFAULT NULL,
+  `isSeen` tinyint(1) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`pid`),
+  KEY `uid` (`uid`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ppmp_items`
+--
+
+DROP TABLE IF EXISTS `ppmp_items`;
+CREATE TABLE IF NOT EXISTS `ppmp_items` (
+  `piid` int(11) NOT NULL AUTO_INCREMENT,
+  `pid` int(11) DEFAULT NULL,
+  `itemid` int(11) DEFAULT NULL,
+  `requested_qty` int(11) DEFAULT NULL,
+  `requested_unit` varchar(20) DEFAULT NULL,
+  `mon_jan` int(11) NOT NULL DEFAULT '0',
+  `mon_feb` int(11) NOT NULL DEFAULT '0',
+  `mon_mar` int(11) NOT NULL DEFAULT '0',
+  `mon_apr` int(11) NOT NULL DEFAULT '0',
+  `mon_may` int(11) NOT NULL DEFAULT '0',
+  `mon_jun` int(11) NOT NULL DEFAULT '0',
+  `mon_jul` int(11) NOT NULL DEFAULT '0',
+  `mon_aug` int(11) NOT NULL DEFAULT '0',
+  `mon_sep` int(11) NOT NULL DEFAULT '0',
+  `mon_oct` int(11) NOT NULL DEFAULT '0',
+  `mon_nov` int(11) NOT NULL DEFAULT '0',
+  `mon_dec` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`piid`),
+  KEY `pid` (`pid`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `purchase_order`
 --
 
@@ -504,14 +553,7 @@ CREATE TABLE IF NOT EXISTS `purchase_order` (
   `status` varchar(50) NOT NULL DEFAULT 'Pending' COMMENT 'Pending (Default), Approved',
   PRIMARY KEY (`poid`),
   KEY `rid` (`rid`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `purchase_order`
---
-
-INSERT INTO `purchase_order` (`poid`, `rid`, `po_number`, `supplier_name`, `supplier_address`, `total_amount`, `created_at`, `updated_at`, `status`) VALUES
-(1, 1, 'PO-2020-01', 'LUCKY', 'LEGAZPI CITY', 17505.5, '2020-02-29 09:12:06', '2020-02-29 10:23:03', 'Accepted');
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -530,15 +572,7 @@ CREATE TABLE IF NOT EXISTS `purchase_order_items` (
   PRIMARY KEY (`poiid`),
   KEY `riid` (`riid`),
   KEY `poid` (`poid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `purchase_order_items`
---
-
-INSERT INTO `purchase_order_items` (`poiid`, `poid`, `riid`, `unit_cost`, `total_cost`, `isDelivered`) VALUES
-(1, 1, 1, 250.5, 2505, 1),
-(2, 1, 2, 15000.5, 15000.5, 1);
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -561,14 +595,7 @@ CREATE TABLE IF NOT EXISTS `request` (
   `remarks` text COMMENT 'In case of disapproved status, you can add reason here ',
   PRIMARY KEY (`rid`),
   KEY `uid` (`uid`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `request`
---
-
-INSERT INTO `request` (`rid`, `uid`, `request_no`, `request_type`, `request_purpose`, `created_at`, `updated_at`, `total_supplies_requested`, `total_equipments_requested`, `status`, `remarks`) VALUES
-(1, 9, 'RN-01', 'Purchase Request', '', '2020-02-29 09:09:07', '2020-02-29 10:23:20', 1, 1, 'Ready', NULL);
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -586,15 +613,7 @@ CREATE TABLE IF NOT EXISTS `request_items` (
   PRIMARY KEY (`riid`),
   KEY `itemid` (`itemid`),
   KEY `rid` (`rid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `request_items`
---
-
-INSERT INTO `request_items` (`riid`, `rid`, `itemid`, `requested_qty`, `requested_unit`) VALUES
-(1, 1, 21, 10, 'Ream'),
-(2, 1, 72, 1, 'Unit');
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -618,19 +637,7 @@ CREATE TABLE IF NOT EXISTS `request_tracer` (
   KEY `source_uid` (`source_uid`),
   KEY `destination_uid` (`destination_uid`),
   KEY `rid` (`rid`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `request_tracer`
---
-
-INSERT INTO `request_tracer` (`tid`, `tracer_no`, `rid`, `source_uid`, `destination_uid_type`, `destination_uid`, `created_at`, `status`, `remarks`, `isSeen`) VALUES
-(1, '1', 1, 9, 'Regional Director', 10, '2020-02-29 09:09:07', 'Approved', NULL, 0),
-(2, '2', 1, 10, 'Administrator', 11, '2020-02-29 09:11:06', 'Approved', NULL, 0),
-(3, '3', 1, 11, 'Regional Director', 10, '2020-02-29 09:12:06', 'Approved', 'Purchase Order', 0),
-(4, '4', 1, 10, 'Inspector', 12, '2020-02-29 09:12:22', 'Inspected', NULL, 0),
-(5, '5', 1, 12, 'Administrator', 11, '2020-02-29 09:20:58', 'Accepted', NULL, 0),
-(6, '6', 1, 11, 'User', 9, '2020-02-29 10:23:20', 'Ready', NULL, 0);
+) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -643,21 +650,14 @@ CREATE TABLE IF NOT EXISTS `supplies_equipment` (
   `sid` int(11) NOT NULL AUTO_INCREMENT,
   `itemid` int(11) DEFAULT NULL,
   `item_qty` int(11) DEFAULT NULL,
+  `available_qty` int(11) NOT NULL DEFAULT '0' COMMENT 'this is used when retrieving available qty for the user',
   `item_unit` varchar(50) DEFAULT NULL COMMENT 'Can be adopted from item default unit or override it',
   `reorder_point` double DEFAULT NULL COMMENT 'Percentage Amount',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`sid`),
   KEY `itemid` (`itemid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `supplies_equipment`
---
-
-INSERT INTO `supplies_equipment` (`sid`, `itemid`, `item_qty`, `item_unit`, `reorder_point`, `created_at`, `updated_at`) VALUES
-(1, 21, 0, 'Ream', 30, '2020-02-29 10:23:04', '2020-02-29 10:23:20'),
-(2, 72, 0, 'Unit', 30, '2020-02-29 10:23:04', '2020-02-29 10:23:20');
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -690,18 +690,7 @@ CREATE TABLE IF NOT EXISTS `supplies_equipment_transaction` (
   KEY `sid` (`sid`),
   KEY `destination_uid` (`destination_uid`),
   KEY `riid` (`riid`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `supplies_equipment_transaction`
---
-
-INSERT INTO `supplies_equipment_transaction` (`stid`, `created_at`, `updated_at`, `transaction_type`, `sid`, `poid`, `riid`, `destination_uid`, `item_qty`, `remarks`, `item_status`, `report_type`, `report_item_no`, `report_overall_no`, `transaction_status`, `transaction_reason`, `requested_by_uid`, `target_uid`, `isSeen`) VALUES
-(1, '2020-02-29 10:23:04', NULL, 'In', 1, 1, NULL, NULL, NULL, 'Purchase Order', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0),
-(2, '2020-02-29 10:23:04', NULL, 'In', 2, 1, NULL, NULL, NULL, 'Purchase Order', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0),
-(3, '2020-02-29 10:23:20', NULL, 'Out', NULL, NULL, 1, 9, 10, 'Request', NULL, 'ics', 'ics-0001', 'ics', NULL, NULL, NULL, NULL, 0),
-(4, '2020-02-29 10:23:20', '2020-02-29 19:10:30', 'Out', NULL, NULL, 2, 9, 1, 'Request', NULL, 'par', 'par-0001', 'par', 'Transfer-Reassignment-CRUZ, JUAN D-Approved', 'requested item', 11, 10, 0),
-(7, '2020-02-29 23:31:35', NULL, 'Out', NULL, NULL, 2, 10, 1, 'Transfer', NULL, 'par', 'par-0001', 'par', 'Transfer-Reassignment-L, F M-Approved', 'requested item', NULL, NULL, 0);
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -720,13 +709,6 @@ CREATE TABLE IF NOT EXISTS `supplies_equipment_transaction_qr_collection` (
   PRIMARY KEY (`qrid`),
   KEY `stid` (`stid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `supplies_equipment_transaction_qr_collection`
---
-
-INSERT INTO `supplies_equipment_transaction_qr_collection` (`qrid`, `stid`, `item_number`, `qr_path`, `created_at`, `updated_at`) VALUES
-(1, 7, 'par-0001_00', 'par-0001_00_2020_02_29_10_23_20.png', '2020-02-29 10:23:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -809,10 +791,10 @@ CREATE TABLE IF NOT EXISTS `user_accounts` (
 --
 
 INSERT INTO `user_accounts` (`uid`, `username`, `password`, `temp_pass`, `user_type`, `gmt_created`, `priviledges`, `gmt_last_access`, `isOnline`, `isActive`, `employeeid`, `fname`, `mname`, `lname`, `midinit`, `birthdate`, `gender`, `citizenship`, `religion`, `address`, `contact_mobile`, `contact_email`) VALUES
-(9, '12-7500', 'e10adc3949ba59abbe56e057f20f883e', NULL, 'User', '2020-02-19 10:03:31', 'list_supplies,list_equipment,list_request,issuance_supplies,issuance_equipments,issuance_records', '2020-03-01 01:21:53', 0, 1, '12-7500', 'F', 'M', 'L', 'M', '1995-09-01', 'Male', 'FILIPINO', 'ROMAN CATHOLIC', 'ZONE 8, BULAN, SORSOGON', '0905 461 2597', 'anthony.gacis@yahoo.com'),
-(10, '123456', 'e10adc3949ba59abbe56e057f20f883e', NULL, 'Regional Director', '2020-02-19 12:48:45', 'list_supplies,list_equipment,doc_approval', '2020-02-29 23:32:09', 0, 1, '123456', 'JUAN', 'DELA', 'CRUZ', 'D', '1995-12-01', 'Male', 'FILIPINO', 'ROMAN CATHOLIC', 'ZONE 8, BULAN, SORSOGON', '0912 345 6789', 'anthony.gacis@yahoo.com'),
-(11, 'admin123', 'e10adc3949ba59abbe56e057f20f883e', NULL, 'Administrator', '2020-02-19 13:08:07', 'item_equipment,purchase_order,list_supplies,list_equipment,list_request,issuance_supplies,issuance_equipments,issuance_records,reports,manage_account,user_activities', '2020-03-01 12:22:53', 0, 1, 'admin123', 'ADMIN', 'ADMIN', 'ADMIN', 'A', '1995-09-01', 'Male', 'FILIPINO', 'ROMAN CATHOLIC', 'ZONE 8, BULAN, SORSOGON', '0054 612 597_', 'anthony.gacis@yahoo.com'),
-(12, 'ins123', 'e10adc3949ba59abbe56e057f20f883e', NULL, 'Inspector', '2020-02-22 22:10:32', 'inspection_supplies_equipments', '2020-02-29 09:21:31', 0, 1, 'ins123', 'INSPECTOR', 'INSPECTOR', 'INSPECTOR', 'I', '1995-09-01', 'Male', 'FILIPINO', 'ROMAN CATHOLIC', 'ZONE 8, BULAN, SORSOGON', '0905 461 2597', 'anthony.gacis@yahoo.com');
+(9, '12-7500', 'e10adc3949ba59abbe56e057f20f883e', NULL, 'User', '2020-02-19 10:03:31', 'list_supplies,list_equipment,list_request,issuance_supplies,issuance_equipments,issuance_records', '2020-03-03 22:30:37', 0, 1, '12-7500', 'F', 'M', 'L', 'M', '1995-09-01', 'Male', 'FILIPINO', 'ROMAN CATHOLIC', 'ZONE 8, BULAN, SORSOGON', '0905 461 2597', 'anthony.gacis@yahoo.com'),
+(10, '123456', 'e10adc3949ba59abbe56e057f20f883e', NULL, 'Regional Director', '2020-02-19 12:48:45', 'list_supplies,list_equipment,doc_approval', '2020-03-03 22:29:33', 0, 1, '123456', 'JUAN', 'DELA', 'CRUZ', 'D', '1995-12-01', 'Male', 'FILIPINO', 'ROMAN CATHOLIC', 'ZONE 8, BULAN, SORSOGON', '0912 345 6789', 'anthony.gacis@yahoo.com'),
+(11, 'admin123', 'e10adc3949ba59abbe56e057f20f883e', NULL, 'Administrator', '2020-02-19 13:08:07', 'item_equipment,purchase_order,list_ppmp,list_supplies,list_equipment,list_request,issuance_supplies,issuance_equipments,issuance_records,reports,manage_account,user_activities', '2020-03-03 22:29:23', 1, 1, 'admin123', 'ADMIN', 'ADMIN', 'ADMIN', 'A', '1995-09-01', 'Male', 'FILIPINO', 'ROMAN CATHOLIC', 'ZONE 8, BULAN, SORSOGON', '0054 612 597_', 'anthony.gacis@yahoo.com'),
+(12, 'ins123', 'e10adc3949ba59abbe56e057f20f883e', NULL, 'Inspector', '2020-02-22 22:10:32', 'inspection_supplies_equipments', '2020-03-03 22:22:02', 0, 1, 'ins123', 'INSPECTOR', 'INSPECTOR', 'INSPECTOR', 'I', '1995-09-01', 'Male', 'FILIPINO', 'ROMAN CATHOLIC', 'ZONE 8, BULAN, SORSOGON', '0905 461 2597', 'anthony.gacis@yahoo.com');
 
 -- --------------------------------------------------------
 
@@ -829,7 +811,7 @@ CREATE TABLE IF NOT EXISTS `user_activities` (
   `event_type` varchar(100) DEFAULT NULL,
   `gmt_datetime` datetime DEFAULT NULL,
   PRIMARY KEY (`act_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=443 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=573 DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `user_activities`
@@ -941,7 +923,137 @@ INSERT INTO `user_activities` (`act_id`, `uid`, `act_name`, `act_descrip`, `even
 (439, 9, 'Session Ended', 'None', 'LOG-OUT', '2020-03-01 01:21:53'),
 (440, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-01 10:51:30'),
 (441, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-01 10:55:59'),
-(442, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-01 12:22:53');
+(442, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-01 12:22:53'),
+(443, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-01 14:33:24'),
+(444, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-01 14:36:15'),
+(445, 9, 'User Accessed', 'None', 'LOG-IN', '2020-03-01 14:36:20'),
+(446, 9, 'Session Ended', 'None', 'LOG-OUT', '2020-03-01 14:41:13'),
+(447, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-01 14:41:17'),
+(448, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-01 16:26:15'),
+(449, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-01 21:50:59'),
+(450, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-02 08:02:15'),
+(451, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-02 08:23:41'),
+(452, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-02 08:24:23'),
+(453, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-02 08:26:46'),
+(454, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-02 11:01:59'),
+(455, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-02 15:27:03'),
+(456, 9, 'User Accessed', 'None', 'LOG-IN', '2020-03-02 15:27:07'),
+(457, 9, 'Session Ended', 'None', 'LOG-OUT', '2020-03-02 16:50:42'),
+(458, 9, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 08:03:14'),
+(459, 9, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 12:21:12'),
+(460, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 12:21:16'),
+(461, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 12:25:01'),
+(462, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 12:25:06'),
+(463, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 16:37:04'),
+(464, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 19:06:43'),
+(465, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 19:06:56'),
+(466, 9, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 19:07:00'),
+(467, 9, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 19:07:51'),
+(468, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 19:07:57'),
+(469, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 19:08:10'),
+(470, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 19:08:14'),
+(471, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:00:21'),
+(472, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:00:25'),
+(473, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:02:19'),
+(474, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:02:26'),
+(475, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:03:30'),
+(476, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:03:35'),
+(477, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:03:54'),
+(478, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:03:58'),
+(479, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:04:27'),
+(480, 12, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:04:31'),
+(481, 12, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:07:16'),
+(482, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:07:23'),
+(483, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:07:43'),
+(484, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:07:47'),
+(485, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:07:49'),
+(486, 12, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:08:08'),
+(487, 12, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:09:10'),
+(488, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:09:19'),
+(489, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:09:45'),
+(490, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:09:49'),
+(491, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:09:52'),
+(492, 12, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:09:56'),
+(493, 12, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:10:01'),
+(494, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:10:05'),
+(495, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:10:18'),
+(496, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:10:26'),
+(497, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:10:58'),
+(498, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:11:02'),
+(499, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:11:10'),
+(500, 12, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:11:15'),
+(501, 12, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:12:12'),
+(502, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:12:20'),
+(503, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:12:56'),
+(504, 12, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:13:00'),
+(505, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:15:06'),
+(506, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:35:39'),
+(507, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:35:57'),
+(508, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:38:19'),
+(509, 12, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:38:22'),
+(510, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:38:26'),
+(511, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:51:12'),
+(512, 9, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:51:16'),
+(513, 9, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:52:10'),
+(514, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:52:20'),
+(515, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 20:52:32'),
+(516, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 20:52:36'),
+(517, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:13:02'),
+(518, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:13:06'),
+(519, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:14:40'),
+(520, 9, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:14:43'),
+(521, 9, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:19:32'),
+(522, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:19:39'),
+(523, 9, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:20:09'),
+(524, 9, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:36:17'),
+(525, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:36:20'),
+(526, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:39:56'),
+(527, 9, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:40:00'),
+(528, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:52:30'),
+(529, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:52:33'),
+(530, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:52:39'),
+(531, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:52:44'),
+(532, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:52:59'),
+(533, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:53:02'),
+(534, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:53:08'),
+(535, 12, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:53:11'),
+(536, 12, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:54:00'),
+(537, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:54:20'),
+(538, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:54:51'),
+(539, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:55:00'),
+(540, 9, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:58:50'),
+(541, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:58:55'),
+(542, 12, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:59:06'),
+(543, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 21:59:11'),
+(544, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 21:59:19'),
+(545, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:12:33'),
+(546, 12, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:12:35'),
+(547, 9, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:12:39'),
+(548, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:12:59'),
+(549, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:13:10'),
+(550, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:13:17'),
+(551, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:13:21'),
+(552, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:16:04'),
+(553, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:16:09'),
+(554, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:16:22'),
+(555, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:16:25'),
+(556, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:16:31'),
+(557, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:16:46'),
+(558, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:20:52'),
+(559, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:20:56'),
+(560, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:21:01'),
+(561, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:21:06'),
+(562, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:21:24'),
+(563, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:21:27'),
+(564, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:21:33'),
+(565, 12, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:21:46'),
+(566, 12, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:22:02'),
+(567, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:22:11'),
+(568, 11, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:29:23'),
+(569, 10, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:29:26'),
+(570, 10, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:29:33'),
+(571, 11, 'User Accessed', 'None', 'LOG-IN', '2020-03-03 22:29:38'),
+(572, 9, 'Session Ended', 'None', 'LOG-OUT', '2020-03-03 22:30:37');
 
 --
 -- Constraints for dumped tables
@@ -958,6 +1070,18 @@ ALTER TABLE `department`
 --
 ALTER TABLE `item_dictionary`
   ADD CONSTRAINT `item_dictionary_ibfk_1` FOREIGN KEY (`catid`) REFERENCES `item_category` (`catid`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `ppmp`
+--
+ALTER TABLE `ppmp`
+  ADD CONSTRAINT `ppmp_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_accounts` (`uid`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `ppmp_items`
+--
+ALTER TABLE `ppmp_items`
+  ADD CONSTRAINT `ppmp_items_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `ppmp` (`pid`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `purchase_order`

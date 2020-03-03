@@ -68,7 +68,7 @@
                                                 ?>
                                                 <tr>
                                                     <td><?php echo $row["item_name"] . "(" . $row["item_description"] . ")"; ?></td>
-                                                    <td><?php echo $row["item_qty"]; ?></td>
+                                                    <td><?php echo $row["available_qty"]; ?></td>
                                                     <td><?php echo $row["item_unit"]; ?></td>
                                                 </tr>
                                                 <?php

@@ -58,6 +58,13 @@
           }
         ?>
         <?php
+          if(strpos($privileges, 'list_ppmp') !== false){
+        ?>
+        <li><a href="list_ppmp.php"><i class="fa fa-list"></i> List of PPMPs</a></li>
+        <?php
+          }
+        ?>
+        <?php
           if(strpos($privileges, 'list_supplies') !== false){
         ?>
         <li><a href="list_supplies.php"><i class="fa fa-list"></i> List of Supplies</a></li>

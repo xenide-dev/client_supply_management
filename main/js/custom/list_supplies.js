@@ -116,7 +116,7 @@ function loadList(t){
                     t.row.add([
                         element.item_code,
                         itemName,
-                        element.item_qty,
+                        element.available_qty,
                         element.item_unit,
                         element.reorder_point,
                         element.updated_at,

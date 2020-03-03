@@ -90,8 +90,9 @@
                         $total_cost = $_POST["total_cost"];
                         $total_amount = 0;
 
-                        for ($i=0; $i < count($unit_cost); $i++) { 
-                          $total_amount += $total_cost[$i];
+                        for ($i=0; $i < count($unit_cost); $i++) {
+                          $val = str_replace(",", "", $total_cost[$i]);
+                          $total_amount += (float)$val;
                         }
 
                         // insert to main table
@@ -101,7 +102,7 @@
                         // insert to sub table
                         $f = false;
                         for ($i=0; $i < count($unit_cost); $i++) { 
-                          $ii = DB::run("INSERT INTO purchase_order_items(poid, riid, unit_cost, total_cost) VALUES(?, ?, ?, ?)", [$poid, $riid[$i], $unit_cost[$i], $total_cost[$i]]);
+                          $ii = DB::run("INSERT INTO purchase_order_items(poid, riid, unit_cost, total_cost) VALUES(?, ?, ?, ?)", [$poid, $riid[$i], str_replace(",", "", $unit_cost[$i]), str_replace(",", "", $total_cost[$i])]);
                           if($ii->rowCount() > 0){
                             $f = true;
                           }
@@ -199,7 +200,7 @@
                                     <td class="rowQ_<?php echo $irow['riid']; ?>"><?php echo $irow["requested_qty"]; ?></td>
                                     <td><?php echo $irow["requested_unit"]; ?></td>
                                     <td>
-                                      <input type="number" step="0.01" min="1" class="form-control rowC_<?php echo $irow['riid']; ?>" name="unit_cost[]" required data-parsley-type="number">
+                                      <input type="text" class="form-control rowC_<?php echo $irow['riid']; ?>" name="unit_cost[]" required>
                                     </td>
                                     <td>
                                       <input type="text" class="form-control rowT_<?php echo $irow['riid']; ?>" name="total_cost[]" readonly value="0">
@@ -269,10 +270,13 @@
                       // update request table
                       DB::run("UPDATE request SET status = ?, updated_at = ? WHERE rid = ?", ['Ready', DB::getCurrentDateTime(), $rid]);
 
-                      // // get the last trace record
+                      // get the last trace record
                       $t = DB::run("SELECT * FROM request_tracer WHERE rid = ? AND destination_uid_type = 'Administrator' ORDER BY tracer_no DESC", [$rid]);
                       $trow = $t->fetch();
                       $tracer_no = $trow["tracer_no"];
+
+                      // update the last trace record
+                      $up = DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, 'Approved', $trow["tid"]]);
 
                       // get the uid of the request
                       $u = DB::run("SELECT * FROM request WHERE rid = ?", [$rid]);
@@ -333,19 +337,52 @@
                     }else{
                       $report_items = [];
 
-                      $p = DB::run("SELECT * FROM purchase_order WHERE rid = ?", [$_GET["rid"]]);
-                      while($prow = $p->fetch()){
-                        $i = DB::run("SELECT * FROM purchase_order_items poi JOIN request_items ri ON poi.riid = ri.riid JOIN item_dictionary id ON ri.itemid = id.itemid WHERE poi.poid = ?", [$prow["poid"]]);
-                        while($irow = $i->fetch()){
-                          $temp = $irow;
-                          if($irow["item_type"] == "Consumable"){
+                      // retrieve request details
+                      $re = DB::run("SELECT * FROM request WHERE rid = ?", [$_GET["rid"]]);
+                      $rerow = $re->fetch();
+
+                      if(!$rerow["request_type"] == "Requisition"){
+                        // for purchase order
+                        $p = DB::run("SELECT * FROM purchase_order WHERE rid = ?", [$_GET["rid"]]);
+                        while($prow = $p->fetch()){
+                          $i = DB::run("SELECT * FROM purchase_order_items poi JOIN request_items ri ON poi.riid = ri.riid JOIN item_dictionary id ON ri.itemid = id.itemid WHERE poi.poid = ?", [$prow["poid"]]);
+                          while($irow = $i->fetch()){
+                            $temp = $irow;
+                            if($irow["item_type"] == "Consumable"){
+                              $temp["report_type"] = "ICS";
+                            }else{
+                              $temp["report_type"] = "PAR";
+                            }
+                            array_push($report_items, $temp);
+                          }
+                        }
+                      }else{
+                        // for requisition
+                        $rqi = DB::run("SELECT * FROM request_items ri JOIN item_dictionary id ON ri.itemid = id.itemid WHERE ri.rid = ?", [$_GET["rid"]]);
+                        while($rqirow = $rqi->fetch()){ 
+                          $temp = $rqirow;
+                          if($rqirow["item_type"] == "Consumable"){
                             $temp["report_type"] = "ICS";
                           }else{
                             $temp["report_type"] = "PAR";
                           }
+
+                          // retrieve cost
+                          $cp = DB::run("SELECT * FROM request_items WHERE itemid = ?", [$rqirow["itemid"]]);
+                          while($cprow = $cp->fetch()){
+                            $poi = DB::run("SELECT * FROM purchase_order_items WHERE riid = ? ORDER BY poiid DESC", [$cprow["riid"]]);
+                            if($poirow = $poi->fetch()){
+                              $temp["unit_cost"] = $poirow["unit_cost"];
+                              $temp["total_cost"] = $poirow["unit_cost"] * $rqirow["requested_qty"];
+                              break;
+                            }
+                          }
                           array_push($report_items, $temp);
                         }
                       }
+
+
+
                 ?>
                 <div class="col-md-12 col-sm-12 col-xs-12">
                   <div class="x_panel">
@@ -391,8 +428,16 @@
                                   <td><?php echo $report_items[$i]["item_name"] . "(" . $report_items[$i]["item_description"] . ")"; ?></td>
                                   <td><?php echo $report_items[$i]["requested_qty"]; ?></td>
                                   <td><?php echo $report_items[$i]["requested_unit"]; ?></td>
-                                  <td><?php echo $report_items[$i]["unit_cost"]; ?></td>
-                                  <td><?php echo $report_items[$i]["total_cost"]; ?></td>
+                                  <td>
+                                    <?php 
+                                      echo $report_items[$i]["unit_cost"]; 
+                                    ?>
+                                  </td>
+                                  <td>
+                                    <?php 
+                                      echo $report_items[$i]["total_cost"]; 
+                                    ?>
+                                  </td>
                                   <td>
                                       <button class="btn btn-primary btn-sm" onclick="transferItems(this);">>></button>
                                       <input type="hidden" name="report_item_par[]" class="form-control item" value="<?php echo $report_items[$i]["riid"] . ",par"; ?>">
