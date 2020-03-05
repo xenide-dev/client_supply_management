@@ -19,6 +19,7 @@
     if($row = $test->fetch()){
       $_SESSION["uid"] = $row["uid"];
       $_SESSION["user_type"] = $row["user_type"];
+      $_SESSION["full_name"] = $row["fname"] . " " . $row["midinit"] . "." . " " . $row["lname"];
       
       // check if new acct
       if($row["temp_pass"] != null){

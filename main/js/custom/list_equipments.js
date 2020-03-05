@@ -4,7 +4,7 @@ $(document).ready(function(){
 
     $("#btnTransfer").on('click', function(){
         $('#frmTransfer').parsley().validate();
-        if(true === $('form').parsley().isValid()){
+        if(true === $('#frmTransfer').parsley().isValid()){
             // check if the destination uid is the same
             if($("#transfer_to").val() == $("#from_uid").val()){
                 swal({
@@ -77,9 +77,10 @@ function loadList(t){
             if(data.msg){
                 data.info.forEach(element => {
                     var actions = 
-                        `<a href="#" class="btn btn-success btn-xs" onclick="loadData(` + element.riid + `, 'item')"><span class="fa fa-file-pdf-o"></span> PDF</a>
+                        `<a href="modules/pdf_generator/generate_stock_pdf.php?itemid=${element.itemid}&h=${element.h}" class="btn btn-success btn-xs" target="_blank"><span class="fa fa-file-pdf-o"></span> Stock Card (PDF)</a>
                         <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".transfer_equipment" onclick="loadTransfer(` + element.stid + `, ` + element.from_uid + `, ` + element.riid + `);"><span class="fa fa-arrows-v"></span> Transfer</button>
-                        <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".qr_codes" onclick="loadQRCodes(` + element.stid + `);"><span class="fa fa-qrcode"></span> View QR Codes</button>`;
+                        <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".view_equipment_history" onclick="loadEquipmentHistory(` + element.riid + `);"><span class="fa fa-search"></span> History</button>
+                        <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".qr_codes" onclick="loadQRCodes(` + element.stid + `);"><span class="fa fa-qrcode"></span> QR Codes</button>`;
                     t.row.add([
                         element.report_item_no,
                         element.name_description,
@@ -129,6 +130,33 @@ function loadQRCodes(stid){
                 });
             }else{
                 alert('Error');
+            }
+        }
+    });
+}
+
+function loadEquipmentHistory(riid){
+    $.ajax({
+        method: 'POST',
+        url: 'modules/asyncUrls/retrieve_list.php',
+        dataType: 'JSON',
+        data: {
+            type: 'equipments',
+            operation: 'history',
+            riid: riid
+        },
+        success: function(data){
+            if(data.msg){
+                $("#equipmentHistoryContainer tbody").empty();
+                $.each( data.info, function( key, value ) {
+                    var temp = 
+                        `<tr>
+                            <th>${value.date_issued}</th>
+                            <td>${value.name}</td>
+                            <td>${value.acquisition}</td>
+                        </tr>`;
+                    $("#equipmentHistoryContainer tbody").append(temp);
+                });
             }
         }
     });

@@ -60,9 +60,11 @@
                                                     <th>Date Issued</th>
                                                     <th>Status</th>
                                                     <th>Transfer Date</th>
+                                                    <th>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
+                                                <!-- Listing all equipments based on the user's request -->
                                                 <?php
                                                     // get all request
                                                     $r = DB::run("SELECT * FROM request r JOIN request_items ri ON r.rid = ri.rid JOIN item_dictionary id ON ri.itemid = id.itemid WHERE r.uid = ? AND id.item_type = 'Non-Consumable'", [$_SESSION["uid"]]);
@@ -87,7 +89,7 @@
                                                             if($trow["remarks"] == "Request"){
                                                                 echo "Serviceable";
                                                             }else{
-                                                                // for transfer
+                                                                // description of the transfer from whom
                                                                 echo "Something";
                                                             }
                                                         ?>
@@ -97,93 +99,109 @@
                                                             if($trow["remarks"] != "Transfer"){
                                                                 echo "N/A";
                                                             }else{
-                                                                // description of the transfer from whom
+                                                                echo $trow["created_at"];
                                                             } 
                                                         ?>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".view_equipment_history" onclick="loadEquipmentHistory(<?php echo $trow['riid']; ?>);" data-backdrop="static">View Equipment History</button>
+                                                        <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".report_status" onclick="changeStatus(<?php echo $trow['riid']; ?>);" data-backdrop="static">Change Status</button>
                                                     </td>
                                                 </tr>
                                                 <?php
                                                             }
                                                         }
                                                     }
-
-                                                    $l = DB::run("SELECT * FROM request WHERE uid = ?", [$_SESSION["uid"]]);
-                                                    while($lrow = $l->fetch()){
-                                                        if($lrow["status"] == "Pending"){
-                                                            $status = '<span class="badge bg-warning">' . $lrow["status"] . '</span>';
-                                                        }elseif($lrow["status"] == "Pending"){
-                                                            $status = '<span class="badge bg-warning">Pending</span>';
-                                                        }elseif($lrow["status"] == "Approved"){
-                                                            $status = '<span class="badge bg-success">Approved</span>';
-                                                        }elseif($lrow["status"] == "Disapproved"){
-                                                            $status = '<span class="badge bg-danger">Disapproved</span>';
-                                                        }elseif($lrow["status"] == "Delivered"){
-                                                            $status = '<span class="badge bg-success">Delivered</span>';
-                                                        }elseif($lrow["status"] == "Pending Items"){
-                                                            $status = '<span class="badge bg-success">Pending Items</span>';
-                                                        }elseif($lrow["status"] == "Processing"){
-                                                            $status = '<span class="badge bg-warning">Processing</span>';
-                                                        }elseif($lrow["status"] == "Inspected"){
-                                                            $status = '<span class="badge bg-primary">Inspected</span>';
-                                                        }elseif($lrow["status"] == "Ready"){
-                                                            $status = '<span class="badge bg-success">Ready for Issuance</span>';
-                                                        }elseif($lrow["status"] == "Accepted"){
-                                                            $status = '<span class="badge bg-success">Accepted</span>';
-                                                        }
                                                 ?>
+
+                                                <!-- Listing all equipments based on transfer -->
+                                                <?php
+                                                    $t = DB::run("SELECT * FROM supplies_equipment_transaction st JOIN request_items ri ON st.riid = ri.riid JOIN item_dictionary id ON ri.itemid = id.itemid WHERE transaction_type = 'Out' AND destination_uid = ? AND remarks = 'Transfer'", [$_SESSION["uid"]]);
+                                                    while($strow = $t->fetch()){
+                                                        $tempText = explode("-", $strow["transaction_status"]);
+                                                ?>
+                                                <tr>
+                                                    <td><?php echo $strow["report_item_no"]; ?></td>
+                                                    <td><?php echo $strow["item_name"] . "(" . $strow["item_description"] . ")"; ?></td>
+                                                    <td><?php echo $strow["requested_qty"]; ?></td>
+                                                    <td><?php echo $strow["requested_unit"]; ?></td>
+                                                    <td><?php echo $strow["created_at"]; ?></td>
+                                                    <td>
+                                                        <?php
+                                                            echo "Transferred from " . $tempText[2];
+                                                        ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php 
+                                                            echo $strow["created_at"];
+                                                        ?>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".view_equipment_history" onclick="loadEquipmentHistory(<?php echo $strow['riid']; ?>);" data-backdrop="static">View Equipment History</button>
+                                                        <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".report_status" onclick="changeStatus(<?php echo $strow['riid']; ?>);" data-backdrop="static">Change Status</button>
+                                                    </td>
+                                                </tr>
                                                 <?php
                                                     }
                                                 ?>
                                             </tbody>
                                         </table>
-                                        <div class="modal fade view_request" tabindex="-1" role="dialog" aria-hidden="true">
-                                            <div class="modal-dialog modal-lg">
+                                        <div class="modal fade report_status" tabindex="-1" role="dialog" aria-hidden="true">
+                                            <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h4 class="modal-title">Requested Items | <span id="requested_no">RN-01</span></h4>
+                                                        <h4 class="modal-title">Report Equipment's Status</h4>
                                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                             <span aria-hidden="true">&times;</span>
                                                         </button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <table class="table table-striped" id="requestItemsContainer">
-                                                        <thead>
-                                                            <tr>
-                                                            <th>#</th>
-                                                            <th>Item Code</th>
-                                                            <th>Item Name/Description</th>
-                                                            <th>Quantity</th>
-                                                            <th>Unit of Measure</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            
-                                                        </tbody>
-                                                        </table>
+                                                        <div class="form-group">
+                                                            <label>Status:</label>
+                                                            <select class="form-control" id="status">
+                                                                <option value="">-- Please select a value --</option>
+                                                                <option value="Active">Active</option>
+                                                                <option value="Disposal">Disposal</option>
+                                                                <option value="Need Repair">Need Repair</option>
+                                                                <option value="Lost">Lost</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                     <div class="modal-footer">
+                                                        <button class="btn btn-primary" id="btnReport">Submit</button>
                                                         <button class="btn btn-default" data-dismiss="modal">Close</button>
                                                     </div>
 
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="modal fade" id="modal-update">
-                                            <div class="modal-dialog">
+                                        <div class="modal fade view_equipment_history" tabindex="-1" role="dialog" aria-hidden="true">
+                                            <div class="modal-dialog modal-xl">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h4 class="modal-title">UNDER CONSTRUCTION</h4>
+                                                        <h4 class="modal-title">Equipment's Ownership History</h4>
                                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                             <span aria-hidden="true">&times;</span>
                                                         </button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <p>UNDER CONSTRUCTION</p>
+                                                        <table class="table table-striped" id="equipmentHistoryContainer">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th width="200">Date Issued</th>
+                                                                    <th>Name</th>
+                                                                    <th width="300">Acquisition Type</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                
+                                                            </tbody>
+                                                        </table>
                                                     </div>
-                                                    <div class="modal-footer justify-content-between">
-                                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                                        <button type="button" class="btn btn-primary">Save changes</button>
+                                                    <div class="modal-footer">
+                                                        <button class="btn btn-default" data-dismiss="modal">Close</button>
                                                     </div>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -221,6 +239,7 @@
         <script src="_custom_assets/js/navigation.js"></script>
         <script src="_custom_assets/js/forms.js"></script>
         <script src="_custom_assets/js/tables.js"></script>
+        <script src="_custom_assets/js/my_equipments.js"></script>
     </body>
     <script>
         if ( window.history.replaceState ) {

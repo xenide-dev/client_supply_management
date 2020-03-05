@@ -97,11 +97,42 @@
                         <tbody>
                         </tbody>
                     </table>
+                    <div class="modal fade view_equipment_history" tabindex="-1" role="dialog" aria-hidden="true">
+                      <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+
+                          <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate id="frmHistory">
+                            <div class="modal-header">
+                              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
+                              </button>
+                              <h4 class="modal-title">Equipment's Ownership History</h4>
+                            </div>
+                            <div class="modal-body">
+                              <table class="table table-striped" id="equipmentHistoryContainer">
+                                  <thead>
+                                      <tr>
+                                          <th width="200">Date Issued</th>
+                                          <th>Name</th>
+                                          <th width="300">Acquisition Type</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                  </tbody>
+                              </table> 
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                          </form>
+
+                        </div>
+                      </div>
+                    </div>
                     <div class="modal fade qr_codes" tabindex="-1" role="dialog" aria-hidden="true">
                       <div class="modal-dialog">
                         <div class="modal-content">
 
-                          <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate id="frmTransfer">
+                          <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate id="frmQrCode">
                             <div class="modal-header">
                               <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
                               </button>

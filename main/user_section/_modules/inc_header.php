@@ -68,7 +68,7 @@
                 </div>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#"><i class="fas fa-th-large"></i></a>
+                <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#"><i class="fas fa-cog"></i></a>
             </li>
         </ul>
     </div>
@@ -78,8 +78,13 @@
 <aside class="control-sidebar control-sidebar-dark">
     <!-- Control sidebar content goes here -->
     <div class="p-3">
-        <h5>Title</h5>
-        <a href="../logout.php">Logout</a>
+        <h5>Settings</h5>
+        <p>
+            <a href="update_account.php">My Account</a>
+        </p>
+        <p>
+            <a href="../logout.php">Logout</a>
+        </p>
     </div>
 </aside>
 <!-- /.control-sidebar -->

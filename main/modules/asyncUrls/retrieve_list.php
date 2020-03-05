@@ -1,5 +1,6 @@
 <?php
     include '../../connection/connection.php';
+    session_start();
 
     $output["msg"] = false;
     if(isset($_POST["type"])){
@@ -28,6 +29,7 @@
                     $irow = $i->fetch();
                     
                     $row["hash_val"] = md5($row["rid"]);
+                    $row["cur_user_type"] = $_SESSION["user_type"];
 
                     if($row["user_type"] == "Administrator"){
                         $row["isDone"] = true;
@@ -63,6 +65,7 @@
 
                     $temp["purpose"] = $rirow["transaction_reason"];
                     $temp["status"] = $exTemp[0] . " Request has been " . $exTemp[3];
+                    $temp["cur_user_type"] = $_SESSION["user_type"];
 
                     array_push($rows, $temp);
                 }
@@ -106,6 +109,8 @@
                     // TODOIMP: UPDATE THE RETRIEVAL OF TRANSFER RECORDS (IF THERE IS)
                     if(isset($trow["transaction_type"])){
                         if($trow["transaction_type"] == "Out"){
+                            $temp["itemid"] = $row["itemid"];
+                            $temp["h"] = md5($row["itemid"]);
                             $temp["riid"] = $trow["riid"];
                             $temp["report_item_no"] = $trow["report_item_no"];
                             $temp["name_description"] = $row["item_name"] . "(" . $row["item_description"] . ")";
@@ -152,6 +157,26 @@
                 $qrow = $q->fetchAll();
 
                 $output["info"] = $qrow;
+                $output["msg"] = true;
+            }elseif($_POST["operation"] == "history"){
+                $riid = $_POST["riid"];
+                $rows = [];
+                // retrieve the history of items
+                $st = DB::run("SELECT * FROM supplies_equipment_transaction st JOIN user_accounts ua ON st.destination_uid = ua.uid WHERE st.riid = ?", [$riid]);
+                while($strow = $st->fetch()){
+                    $temp["date_issued"] = $strow["created_at"];
+                    $temp["name"] = $strow["lname"] . ", " . $strow["fname"] . " " . $strow["midinit"] . ".";
+                    if($strow["remarks"] == "Request"){
+                        $temp["acquisition"] = "Via Request";
+                    }elseif($strow["remarks"] == "Transfer"){
+                        $tempData = explode("-", $strow["transaction_status"]);
+                        $temp["acquisition"] = "Via Transfer (" . $tempData[1] . ")<br/>(From: " . $tempData[2] . ")";
+                    }
+
+                    array_push($rows, $temp);
+                }
+
+                $output["info"] = $rows;
                 $output["msg"] = true;
             }
         }elseif($_POST["type"] == "transfer"){

@@ -8,7 +8,7 @@
                 if($_POST["requestType"] == "requisition"){
                     $items = [];
                     // retrieve all items that have a stock
-                    $a = DB::run("SELECT * FROM item_dictionary id LEFT JOIN item_category ic ON id.catid = ic.catid ORDER BY id.item_name ASC");
+                    $a = DB::run("SELECT * FROM item_dictionary id LEFT JOIN item_category ic ON id.catid = ic.catid WHERE id.item_type = 'Consumable' ORDER BY id.item_name ASC");
                     while($arow = $a->fetch()){
                         // check if there is some stock
                         $c = DB::run("SELECT * FROM supplies_equipment WHERE itemid = ?", [$arow["itemid"]]);

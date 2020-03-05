@@ -88,10 +88,12 @@
                         <tbody>
                           <!-- For Regular Request -->
                           <?php
-                            $retrieve = DB::run("SELECT t.status, t.created_at, r.request_no, r.request_type, u.fname, u.mname, u.lname, u.midinit, r.request_purpose, t.rid, t.tid, t.tracer_no, t.remarks FROM request_tracer t JOIN request r ON t.rid = r.rid JOIN user_accounts u ON t.source_uid = u.uid WHERE t.destination_uid_type = 'Regional Director' AND t.status = 'Pending'");
+                            $retrieve = DB::run("SELECT t.status, t.created_at, r.request_no, r.request_type, u.fname, u.mname, u.lname, u.midinit, r.request_purpose, t.rid, t.tid, t.tracer_no, t.remarks FROM request_tracer t JOIN request r ON t.rid = r.rid JOIN user_accounts u ON t.source_uid = u.uid WHERE t.destination_uid_type = 'Regional Director'");
                             while ($row = $retrieve->fetch()) {
+                              $bg_color = "";
                               if($row["status"] == "Pending"){
                                   $status = '<span class="label label-warning">' . $row["status"] . '</span>';
+                                  $bg_color = "style='background-color: #FFCDBB'";
                               }elseif($row["status"] == "Approved"){
                                   $status = '<span class="label label-success">Approved</span>';
                               }elseif($row["status"] == "Disapproved"){
@@ -109,8 +111,13 @@
                               }elseif($row["status"] == "Accepted"){
                                   $status = '<span class="label label-success">Accepted</span>';
                               }
+
+                              $bg_color = "";
+                              if($row["status"] == "Pending"){
+                                  $bg_color = "style='background-color: #FFCDBB'";
+                              }
                           ?>
-                          <tr>
+                          <tr <?php echo $bg_color; ?>>
                             <td><?php echo DB::formatDateTime($row["created_at"]); ?></td>
                             <td><?php echo $row["request_no"]; ?></td>
                             <td>

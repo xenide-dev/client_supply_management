@@ -65,13 +65,13 @@
                         $new_pass = $_POST["new_pass"];
                         $confirm_pass = $_POST["confirm_pass"];
 
-                        $ret = DB::run("SELECT * FROM employee WHERE employeeid = ?", [$_SESSION["employeeid"]]);
+                        $ret = DB::run("SELECT * FROM user_accounts WHERE uid = ?", [$_SESSION["uid"]]);
                         if($row = $ret->fetch()){
-                          if($row["password"] == $old_pass){
+                          if($row["password"] == md5($old_pass)){
                             // check match
                             if($new_pass == $confirm_pass){
                               // procede to change
-                              $up = DB::run("UPDATE employee SET password = ? WHERE employeeid = ?", [$new_pass, $_SESSION["employeeid"]]);
+                              $up = DB::run("UPDATE user_accounts SET password = ? WHERE uid = ?", [md5($new_pass), $_SESSION["uid"]]);
                               if($up->rowCount() > 0){
                                 $output["status"] = "success";
                               }else{

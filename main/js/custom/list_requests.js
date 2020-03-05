@@ -4,7 +4,7 @@ $(document).ready(function(){
     loadList(t);
     loadOtherList(o);
 
-    $("input[class*='rowC_']").on('keyup', function(){
+    $("input[class*='rowC_']").on('keyup change', function(){
         var thisVal = $(this).val().replace(/,/g, '');
         $(this).val(formatCurrency(thisVal, false));
 
@@ -132,23 +132,25 @@ function loadList(t){
                     }
 
                     var actions = view_items;
-                    if(element.request_type == "Requisition"){
-                        if(element.status == "Processing"){
-                            actions += issuance;
-                        }else if(element.status == "Ready" || element.status == "Delivered"){
-                            actions += printPAR + printICS;
-                        }
-                    }else if(element.request_type == "Purchase Request"){
-                        if(element.status == "Approved"){
-                            actions += prepare_purchase_order;
-                        }else if(element.status == "Inspected"){
-                            actions += accept;
-                        }else if(element.status == "Accepted"){
-                            if(!element.isDone){
+                    if(element.cur_user_type == "Administrator"){
+                        if(element.request_type == "Requisition"){
+                            if(element.status == "Processing"){
                                 actions += issuance;
+                            }else if(element.status == "Ready" || element.status == "Delivered"){
+                                actions += printPAR + printICS;
                             }
-                        }else if(element.status == "Ready" || element.status == "Delivered"){
-                            actions += printPAR + printICS;
+                        }else if(element.request_type == "Purchase Request"){
+                            if(element.status == "Approved"){
+                                actions += prepare_purchase_order;
+                            }else if(element.status == "Inspected"){
+                                actions += accept;
+                            }else if(element.status == "Accepted"){
+                                if(!element.isDone){
+                                    actions += issuance;
+                                }
+                            }else if(element.status == "Ready" || element.status == "Delivered"){
+                                actions += printPAR + printICS;
+                            }
                         }
                     }
                     t.row.add([
@@ -219,21 +221,24 @@ function loadOtherList(t){
                     }
 
                     var actions = view_items;
-                    if(element.request_type == "Requisition"){
-                        if(element.status == "Processing"){
-                            actions += issuance;
-                        }
-                    }else if(element.request_type == "Purchase Request"){
-                        if(element.status == "Approved"){
-                            actions += prepare_purchase_order;
-                        }else if(element.status == "Inspected"){
-                            actions += accept;
-                        }else if(element.status == "Accepted"){
-                            actions += issuance;
-                        }else if(element.status == "Ready" || element.status == "Delivered"){
-                            actions += printPAR + printICS;
+                    if(element.cur_user_type == "Administrator"){
+                        if(element.request_type == "Requisition"){
+                            if(element.status == "Processing"){
+                                actions += issuance;
+                            }
+                        }else if(element.request_type == "Purchase Request"){
+                            if(element.status == "Approved"){
+                                actions += prepare_purchase_order;
+                            }else if(element.status == "Inspected"){
+                                actions += accept;
+                            }else if(element.status == "Accepted"){
+                                actions += issuance;
+                            }else if(element.status == "Ready" || element.status == "Delivered"){
+                                actions += printPAR + printICS;
+                            }
                         }
                     }
+                    
                     t.row.add([
                         element.created_at,
                         element.request_type,

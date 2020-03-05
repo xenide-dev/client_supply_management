@@ -183,9 +183,11 @@
                           <tr>
                             <th>Item Code</th>
                             <th>Item Name/Description</th>
-                            <th>Current Quantity</th>
+                            <th width="100">Available Quantity</th>
+                            <th width="100">Base Quantity <br/> Default (100)</th>
                             <th>Item Unit</th>
-                            <th>Reorder Point</th>
+                            <th width="100">Item Type</th>
+                            <th width="100">Reorder Point (Percentage)</th>
                             <th>Last Update</th>
                             <th>Actions</th>
                           </tr>

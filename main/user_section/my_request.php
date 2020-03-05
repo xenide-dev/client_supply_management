@@ -202,6 +202,10 @@
                                                         ?>
                                                         <a href="_modules/pdf_generator/pdf_generate_purchase_request.php?rid=<?php echo $rid; ?>&h=<?php echo $h; ?>" class="btn btn-primary btn-xs" target="_blank">Purchase Request (PDF)</a>
                                                         <?php
+                                                            }elseif($lrow["request_type"] == "Requisition"){
+                                                        ?>
+                                                        <a href="_modules/pdf_generator/pdf_generate_requisition.php?rid=<?php echo $rid; ?>&h=<?php echo $h; ?>" class="btn btn-primary btn-xs" target="_blank">Requisition (PDF)</a>
+                                                        <?php
                                                             }
                                                         ?>
                                                         <a href="my_request.php?rid=<?php echo $lrow['rid']; ?>&h=<?php echo md5($lrow['rid']); ?>" class="btn btn-success btn-xs">Trace</a>

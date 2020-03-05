@@ -40,31 +40,50 @@
                         <div class="row">
                             <div class="col-lg-6">
                                 <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title m-0">Number of Requests (All Users)</h5>
+                                    </div>
                                     <div class="card-body">
-                                        <h5 class="card-title">Card title</h5>
-
-                                        <p class="card-text">
-                                        Some quick example text to build on the card title and make up the bulk of the card's
-                                        content.
-                                        </p>
-
-                                        <a href="#" class="card-link">Card link</a>
-                                        <a href="#" class="card-link">Another link</a>
+                                        <div class="chart">
+                                            <canvas id="areaChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div class="card card-primary card-outline">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Card title</h5>
-
-                                        <p class="card-text">
-                                        Some quick example text to build on the card title and make up the bulk of the card's
-                                        content.
-                                        </p>
-                                        <a href="#" class="card-link">Card link</a>
-                                        <a href="#" class="card-link">Another link</a>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title m-0">Most Requested Items (All Users)</h5>
                                     </div>
-                                </div><!-- /.card -->
+                                    <div class="card-body p-0">
+                                        <table class="table table-condensed">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Item Name / Description</th>
+                                                    <th># of Requests</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php
+                                                    // retrieve all items
+                                                    $i = DB::run("SELECT id.item_name, id.item_description, COUNT(*) as total FROM request_items ri JOIN item_dictionary id ON ri.itemid = id.itemid GROUP BY ri.itemid ORDER BY total DESC LIMIT 10");
+                                                    $counter=1;
+                                                    while($irow = $i->fetch()){
+                                                ?>
+                                                <tr>
+                                                    <td><?php echo $counter; ?></td>
+                                                    <td><?php echo $irow["item_name"] . " (" . $irow["item_description"] . ")"; ?></td>
+                                                    <td width="20%"><?php echo $irow["total"]; ?></td>
+                                                </tr>
+                                                <?php
+                                                        $counter++;
+                                                    }
+                                                ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -82,8 +101,11 @@
         <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
         <!-- AdminLTE App -->
         <script src="dist/js/adminlte.min.js"></script>
+        <!-- ChartJS -->
+        <script src="plugins/chart.js/Chart.min.js"></script>
 
         <!-- Custom Scripts -->
         <script src="_custom_assets/js/navigation.js"></script>
+        <script src="_custom_assets/js/index.js"></script>
     </body>
 </html>

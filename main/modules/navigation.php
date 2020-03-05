@@ -145,7 +145,7 @@
     <div class="menu_section">
       <h3>Report Management</h3>
       <ul class="nav side-menu">
-        <li><a href="#"><i class="fa fa-line-chart"></i> Reports</a></li> 
+        <li><a href="reports.php"><i class="fa fa-line-chart"></i> Reports</a></li> 
       </ul>
     </div>
     <?php

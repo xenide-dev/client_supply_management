@@ -1,7 +1,16 @@
 var count = 1;
 var idCount = 1;
 $(document).ready(function(){
-    var t = $('#dtList').DataTable();
+    var t = $('#dtList').DataTable({
+        "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+            var perVal = parseFloat(aData[3]) * (parseFloat(aData[6]) / 100);
+            if(aData[5] == "Consumable"){                
+                if(parseFloat(aData[2]) < perVal){
+                    $('td', nRow).css('background-color', '#FFCDBB');
+                }
+            }
+          }
+    });
     loadList(t);
 
     init_parsley();
@@ -117,7 +126,9 @@ function loadList(t){
                         element.item_code,
                         itemName,
                         element.available_qty,
+                        element.base_qty,
                         element.item_unit,
+                        element.item_type,
                         element.reorder_point,
                         element.updated_at,
                         actions

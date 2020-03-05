@@ -69,7 +69,7 @@
 
             <div class="row">
               <?php
-                if(isset($_GET["type"]) && isset($_GET["rid"])){
+                if(isset($_GET["type"]) && isset($_GET["rid"]) && $_SESSION["user_type"] == "Administrator"){
                   if($_GET["type"] == "make_order" && $_GET["rid"] != ""){
                     if(isset($_POST["po_number"])){
 
@@ -275,12 +275,15 @@
                       $trow = $t->fetch();
                       $tracer_no = $trow["tracer_no"];
 
-                      // update the last trace record
-                      $up = DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, 'Approved', $trow["tid"]]);
+                      // update the last trace record for requisition
+                      if($trow["status"] == "Pending"){
+                        $up = DB::run("UPDATE request_tracer SET destination_uid = ?, status = ? WHERE tid = ?", [$uid, 'Approved', $trow["tid"]]);
+                      }
 
                       // get the uid of the request
                       $u = DB::run("SELECT * FROM request WHERE rid = ?", [$rid]);
-                      $destin_uid = $u->fetch()["uid"];
+                      $ur = $u->fetch();
+                      $destin_uid = $ur["uid"];
 
                       // create another trace entry
                       DB::run("INSERT request_tracer(tracer_no, rid, source_uid, destination_uid_type, destination_uid, status) VALUES(?, ?, ?, ?, ?, ?)", [intval($tracer_no) + 1, $rid, $uid, 'User', $destin_uid, 'Ready']);
@@ -293,7 +296,11 @@
                         $grow = $g->fetch();
 
                         // deduct the qty from the main table
-                        DB::run("UPDATE supplies_equipment SET item_qty = item_qty - ?, updated_at = ? WHERE itemid = ?", [$grow["requested_qty"], DB::getCurrentDateTime(), $grow["itemid"]]);
+                        if($ur["request_type"] != "Requisition"){
+                          DB::run("UPDATE supplies_equipment SET item_qty = item_qty - ?, available_qty = available_qty - ?, updated_at = ? WHERE itemid = ?", [$grow["requested_qty"], $grow["requested_qty"], DB::getCurrentDateTime(), $grow["itemid"]]);
+                        }else{
+                          DB::run("UPDATE supplies_equipment SET item_qty = item_qty - ?, updated_at = ? WHERE itemid = ?", [$grow["requested_qty"], DB::getCurrentDateTime(), $grow["itemid"]]);
+                        }
 
                         // insert transaction entry
                         DB::run("INSERT INTO supplies_equipment_transaction(transaction_type, riid, destination_uid, item_qty, remarks, report_type, report_item_no, report_overall_no) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", ['Out', $grow["riid"], $destin_uid, $grow["requested_qty"], 'Request', $item[1], $ics_item_no[$i], $ics_no]);
@@ -307,16 +314,20 @@
                         $grow = $g->fetch();
 
                         // deduct the qty from the main table
-                        DB::run("UPDATE supplies_equipment SET item_qty = item_qty - ?, updated_at = ? WHERE itemid = ?", [$grow["requested_qty"], DB::getCurrentDateTime(), $grow["itemid"]]);
+                        if($ur["request_type"] != "Requisition"){
+                          DB::run("UPDATE supplies_equipment SET item_qty = item_qty - ?, available_qty = available_qty - ?, updated_at = ? WHERE itemid = ?", [$grow["requested_qty"], $grow["requested_qty"], DB::getCurrentDateTime(), $grow["itemid"]]);
+                        }else{
+                          DB::run("UPDATE supplies_equipment SET item_qty = item_qty - ?, updated_at = ? WHERE itemid = ?", [$grow["requested_qty"], DB::getCurrentDateTime(), $grow["itemid"]]);
+                        }
 
                         // insert transaction entry
                         DB::run("INSERT INTO supplies_equipment_transaction(transaction_type, riid, destination_uid, item_qty, remarks, report_type, report_item_no, report_overall_no) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", ['Out', $grow["riid"], $destin_uid, $grow["requested_qty"], 'Request', $item[1], $par_item_no[$i], $par_no]);
                         $lastID = DB::getLastInsertedID();
 
                         // generate qr code | iterate based on the number of items
-                        for ($i=0; $i < $grow["requested_qty"]; $i++) { 
-                          $value = $par_item_no[$i] . "_" . (($i < 10) ? "0" . $i : $i);
-                          $path = $par_item_no[$i] . "_" . (($i < 10) ? "0" . $i : $i) . "_" . date("Y_m_d_H_i_s");
+                        for ($j=0; $j < $grow["requested_qty"]; $j++) { 
+                          $value = $par_item_no[$i] . "_" . (($j < 10) ? "0" . $j : $j);
+                          $path = $par_item_no[$i] . "_" . (($j < 10) ? "0" . $j : $j) . "_" . date("Y_m_d_H_i_s");
                           $path = trim($path);
 
                           // insert the data to database
