@@ -100,7 +100,7 @@ function loadList(t){
                 data.info.forEach(element => {
                     var view_items = `<button class="btn btn-primary btn-xs" onclick="loadData(` + element.rid + `, 'request', '#requestItemsContainer tbody');" data-toggle="modal" data-target=".view_request">View Items</button>`;
                     // var issuance = `<button class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'issuance', 'Ready', this)"> Ready for Issuance</button>`;
-                    var issuance = `<a href="list_requests.php?type=make_issuance_report&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">Prepare Issuance Report</a>`;
+                    var issuance = `<a href="list_requests.php?type=make_issuance_report&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">Prepare PAR/ICS</a>`;
                     var prepare_purchase_order = `<a href="list_requests.php?type=make_order&rid=` + element.rid + `" class="btn btn-success btn-xs" onclick="loadData(` + element.rid + `, 'item')" > Prepare Purchase Order</a>`;
                     var accept = `<button type="button" class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'request', 'Accepted', this)"> Accept</button>`;
                     var printPAR = `<a href="modules/pdf_generator/generate_pdf.php?type=par&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs" target="_blank">PAR (PDF)</a>`;
@@ -149,7 +149,11 @@ function loadList(t){
                                     actions += issuance;
                                 }
                             }else if(element.status == "Ready" || element.status == "Delivered"){
-                                actions += printPAR + printICS;
+                                if(element.ics_par.indexOf("par") >= 0){
+                                    actions += printPAR;
+                                }else if(element.ics_par.indexOf("ics") >= 0){
+                                    actions += printICS
+                                }
                             }
                         }
                     }
@@ -191,7 +195,7 @@ function loadOtherList(t){
                     // TODOIMP: UPDATE ACTIONS COLUMN
                     var view_items = `<button class="btn btn-primary btn-xs" onclick="loadData(` + element.rid + `, 'request', '#requestItemsContainer tbody');" data-toggle="modal" data-target=".view_request">View Items</button>`;
                     // var issuance = `<button class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'issuance', 'Ready', this)"> Ready for Issuance</button>`;
-                    var issuance = `<a href="list_requests.php?type=make_issuance_report&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">Prepare Issuance Report</a>`;
+                    var issuance = `<a href="list_requests.php?type=make_issuance_report&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">Prepare PAR/ICS</a>`;
                     var prepare_purchase_order = `<a href="list_requests.php?type=make_order&rid=` + element.rid + `" class="btn btn-success btn-xs" onclick="loadData(` + element.rid + `, 'item')" > Prepare Purchase Order</a>`;
                     var accept = `<button type="button" class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'request', 'Accepted', this)"> Accept</button>`;
                     var printPAR = `<a href="modules/pdf_generator/generate_pdf.php?type=par&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">PAR (PDF)</a>`;

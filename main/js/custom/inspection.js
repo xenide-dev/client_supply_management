@@ -20,7 +20,8 @@ function loadList(t){
             if(data.msg){
                 data.info.forEach(element => {
                     var actions = 
-                    `<a href="#" class="btn btn-success btn-xs" onclick="loadData(` + element.poid + `, 'request', '#itemsContainer tbody');" data-toggle="modal" data-target=".viewItem"><span class="fa fa-search"></span> Inspect Items</a>`;
+                    `<a href="#" class="btn btn-success btn-xs" onclick="loadData(` + element.poid + `, 'request', '#itemsContainer tbody');" data-toggle="modal" data-target=".viewItem"><span class="fa fa-search"></span> Inspect Items</a>
+                    <a href="modules/pdf_generator/generate_inspection_pdf.php?poid=${element.poid}&h=${element.h}" class="btn btn-success btn-xs" target="_blank"><span class="fa fa-search"></span> Inspection Report(PDF)</a>`;
                     var requestedBy = element.lname + ", " + element.fname + " " + element.midinit;
                     t.row.add([
                         element.po_number,

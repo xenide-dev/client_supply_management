@@ -262,13 +262,23 @@
                         $riid = explode(",", $report_item_par[0])[0];
                       }
 
+                      $ics_par = "";
+
+                      // check ICS and PAR items
+                      if(count($report_item_ics) > 0){
+                        $ics_par .= "ics-";
+                      }
+                      if(count($report_item_par) > 0){
+                        $ics_par .= "par-";
+                      }
+
                       // get the rid from a sample
                       $r = DB::run("SELECT * FROM request_items WHERE riid = ?", [$riid]);
                       $rrow = $r->fetch();
                       $rid = $rrow["rid"];
                       
                       // update request table
-                      DB::run("UPDATE request SET status = ?, updated_at = ? WHERE rid = ?", ['Ready', DB::getCurrentDateTime(), $rid]);
+                      DB::run("UPDATE request SET status = ?, updated_at = ?, ics_par = ? WHERE rid = ?", ['Ready', DB::getCurrentDateTime(), $ics_par, $rid]);
 
                       // get the last trace record
                       $t = DB::run("SELECT * FROM request_tracer WHERE rid = ? AND destination_uid_type = 'Administrator' ORDER BY tracer_no DESC", [$rid]);

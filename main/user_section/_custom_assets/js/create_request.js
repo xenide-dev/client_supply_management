@@ -25,7 +25,7 @@ $(document).ready(function(){
                                             `;
                     data.info.forEach(element => {
                         if(element.rem_qty != undefined){
-                            var itemFormat = element.item_name + " (" + element.item_description + ") | Qty: " + element.rem_qty;
+                            var itemFormat = element.item_name + " (" + element.item_description + ") | Available Qty: " + element.rem_qty;
                         }else{
                             var itemFormat = element.item_name + " (" + element.item_description + ")";
                         }

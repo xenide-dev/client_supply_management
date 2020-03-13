@@ -42,6 +42,18 @@
               $message["link"] = "list_supplies.php";
               array_push($notifContainer, $message);
             }
+
+            // check all pending documents
+            $t = DB::run("SELECT COUNT(*) as total FROM request_tracer WHERE destination_uid_type = 'Administrator' AND status = 'Pending'");
+            $trow = $t->fetch();
+            $total = $trow["total"];
+
+            if($total > 0){
+              $message["title"] = "Pending Documents";
+              $message["description"] = "You have " . $total . " document/s which require immediate attention. Please check them out!";
+              $message["link"] = "list_requests.php";
+              array_push($notifContainer, $message);
+            }
           }elseif($_SESSION["user_type"] == "Regional Director"){
             // check all pending documents
             $t = DB::run("SELECT COUNT(*) as total FROM request_tracer WHERE destination_uid_type = 'Regional Director' AND status = 'Pending'");

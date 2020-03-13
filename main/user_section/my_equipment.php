@@ -158,9 +158,10 @@
                                                     <div class="modal-body">
                                                         <div class="form-group">
                                                             <label>Status:</label>
+                                                            <input type="hidden" id="riid" readonly>
                                                             <select class="form-control" id="status">
                                                                 <option value="">-- Please select a value --</option>
-                                                                <option value="Active">Active</option>
+                                                                <option value="Serviceable">Serviceable (Active)</option>
                                                                 <option value="Disposal">Disposal</option>
                                                                 <option value="Need Repair">Need Repair</option>
                                                                 <option value="Lost">Lost</option>

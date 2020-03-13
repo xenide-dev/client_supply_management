@@ -84,6 +84,7 @@
                     $prow = $p->fetch();
 
                     if($prow["status"] == "Approved"){
+                        $row["h"] = md5($row["poid"]);
                         array_push($rows, $row);
                     }
                 }
@@ -222,6 +223,61 @@
                 $prow = $p->fetchAll();
 
                 $output["info"] = $prow;
+                $output["msg"] = true;
+            }elseif($_POST["operation"] == "consolidate"){
+                $app_year = $_POST["app_year"];
+                
+                // retrieve all unique items
+                $r = DB::run("SELECT pi.itemid, SUM(pi.requested_qty) as total, pi.requested_unit, id.item_name, id.item_description FROM ppmp_items pi JOIN ppmp p ON pi.pid = p.pid JOIN item_dictionary id ON id.itemid = pi.itemid WHERE p.ppmp_year = ? GROUP BY pi.itemid", [$app_year]);
+                $rrow = $r->fetchAll();
+
+                $output["info"] = $rrow;
+                $output["msg"] = true;
+            }
+        }elseif($_POST["type"] == "app"){
+            if($_POST["operation"] == "getAll"){
+
+                $a = DB::run("SELECT * FROM app ORDER BY app_year");
+                $arow = $a->fetchAll();
+
+                $output["info"] = $arow;
+                $output["msg"] = true;
+            }elseif($_POST["operation"] == "getAllItems"){
+                $aid = $_POST["aid"];
+
+                $a = DB::run("SELECT * FROM app_items ai JOIN item_dictionary id ON ai.itemid = id.itemid WHERE ai.aid = ?", [$aid]);
+                $arow = $a->fetchAll();
+
+                $output["info"] = $arow;
+                $output["msg"] = true;
+            }
+        }elseif($_POST["type"] == "purchase_orders"){
+            if($_POST["operation"] == "getAll"){
+                $items = [];
+
+                // retrieve all purchase orders
+                $p = DB::run("SELECT * FROM purchase_order ORDER BY po_number");
+                while($prow = $p->fetch()){
+                    $prow["total_amount"] = number_format($prow["total_amount"], 2);
+                    $prow["h"] = md5($prow["poid"]);
+
+                    array_push($items, $prow);
+                }
+
+                $output["info"] = $items;
+                $output["msg"] = true;
+            }elseif($_POST["operation"] == "getAllItems"){
+                $poid = $_POST["poid"];
+                $items = [];
+
+                $pi = DB::run("SELECT * FROM purchase_order_items poi JOIN request_items ri ON poi.riid = ri.riid JOIN item_dictionary id ON ri.itemid = id.itemid WHERE poi.poid = ?", [$poid]);
+                while($pirow = $pi->fetch()){
+                    $pirow["unit_cost"] = number_format($pirow["unit_cost"], 2);
+                    $pirow["total_cost"] = number_format($pirow["total_cost"], 2);
+                    array_push($items, $pirow);
+                }
+
+                $output["info"] = $items;
                 $output["msg"] = true;
             }
         }

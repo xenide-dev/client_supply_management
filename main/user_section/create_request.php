@@ -41,6 +41,11 @@
                 <div class="content">
                     <div class="container">
                         <?php
+                            // check if there is a ppmp created for the current year
+                            $p = DB::run("SELECT * FROM ppmp WHERE ppmp_year = ? AND uid = ?", [date("Y"), $_SESSION["uid"]]);
+                            if($prow = $p->fetch()){
+                        ?>
+                        <?php
                             if(isset($_POST["request_purpose"])){
                                 $request_purpose = $_POST["request_purpose"];
                                 $request_no = strtoupper($_POST["request_no"]);
@@ -122,6 +127,15 @@
                                 </div>
                             </div>
                         </div>
+                        <?php
+                            }else{
+                        ?>
+                        <div class="alert alert-warning">
+                            <strong>Oops!</strong> We detected that you don't have any PPMP record for the year <strong><?php echo date("Y"); ?></strong>. You can create your ppmp <a href="create_ppmp.php">here.</a>
+                        </div>
+                        <?php
+                            }
+                        ?>
                     </div>
                 </div>
             </div>

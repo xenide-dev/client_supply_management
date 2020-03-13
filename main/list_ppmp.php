@@ -36,6 +36,8 @@
     <!-- select2 -->
     <link href="../vendors/select2/css/select2.min.css" rel="stylesheet">
     <link href="../vendors/select2-bootstrap4-theme/select2-bootstrap4.min.css" rel="stylesheet">
+    <!-- iCheck -->
+    <link href="../vendors/iCheck/skins/flat/green.css" rel="stylesheet">
 
 
     <!-- Custom Theme Style -->
@@ -69,7 +71,157 @@
 
 
             <div class="row">
-              <!-- Supplies List -->
+              <?php
+                if(isset($_GET["type"]) && isset($_GET["h"])){
+                  if($_GET["type"] == "create" && $_GET["h"] != ""){
+                    if(md5('h') == $_GET["h"]){
+
+
+                      // handle submission
+                      if(isset($_POST["app_year"])){
+                        $app_year = $_POST["app_year"];
+                        $request_purpose = $_POST["request_purpose"];
+                        $itemid = $_POST["itemid"];
+                        $requested_qty = $_POST["requested_qty"];
+                        $requested_unit = $_POST["requested_unit"];
+                        
+                        // check if already exist
+                        $c = DB::run("SELECT * FROM app WHERE app_year = ?", [$app_year]);
+                        if($c->fetch()){
+              ?>
+              <div class="alert alert-danger">
+                <strong>Error!</strong> APP for the year <?php echo $app_year; ?> is already exist!
+              </div>
+              <?php
+                        }else{
+                          $total_supplies = 0;
+                          $total_equipments = 0;
+                          // get total supplies and equipments
+                          for ($i=0; $i < count($itemid); $i++) { 
+                            $t = DB::run("SELECT * FROM item_dictionary WHERE itemid = ?", [$itemid[$i]]);
+                            $trow = $t->fetch();
+                            if($trow["item_type"] == "Consumable"){
+                              $total_supplies++;
+                            }else{
+                              $total_equipments++;
+                            }
+                          }
+
+                          // add entries to main app table
+                          $a = DB::run("INSERT INTO app(uid, app_year, total_supplies, total_equipments) VALUES(?, ?, ?, ?)", [$_SESSION["uid"], $app_year, $total_supplies, $total_equipments]);
+                          $aid = DB::getLastInsertedID();
+                          if($a->rowCount() > 0){
+                            // add to sub table
+                            for ($i=0; $i < count($itemid); $i++) {
+                              DB::run("INSERT INTO app_items(aid, itemid, requested_qty, requested_unit) VALUES(?, ?, ?, ?)", [$aid, $itemid[$i], $requested_qty[$i], $requested_unit[$i]]);
+                            }
+                          }
+                          
+                          // create a purchase request
+                          $p = DB::run("INSERT INTO request(uid, request_no, request_type, request_purpose, total_supplies_requested, total_equipments_requested) VALUES(?, ?, ?, ?, ?, ?)", [$_SESSION["uid"], "APP-" . $app_year , "Purchase Request", $request_purpose, $total_supplies, $total_equipments]);
+                          $rid = DB::getLastInsertedID();
+                          // save all items
+                          for ($i=0; $i < count($itemid); $i++) { 
+                            DB::run("INSERT INTO request_items(rid, itemid, requested_qty, requested_unit) VALUES(?, ?, ?, ?)", [$rid, $itemid[$i], $requested_qty[$i], $requested_unit[$i]]);
+                          }
+
+                          // create trace entry
+                          DB::insertTraceEntry(1, $rid, $_SESSION["uid"], "Regional Director", null, "Pending", null);
+              ?>
+              <div class="alert alert-success">
+                <strong>Success!</strong> APP has been submitted. Thank you!
+              </div>
+              <?php
+                        }
+                      }
+              ?>
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div id="loading_modal">
+                      <div id="loading-circle"></div>
+                    </div>
+                    <div class="x_title">
+                      <h2>Create APP</h2>
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                      <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" data-parsley-validate method="POST" id="frmList">
+                        <div class="row">
+                          <div class="col-md-5 col-sm-12 col-xs-12">
+                            <div class="form-group">
+                              <label>Select year:</label>
+                              <select name="app_year" class="form-control" id="app_year">
+                                <option value="">-- Please select a value --</option>
+                                <?php
+                                  $a = DB::run("SELECT ppmp_year FROM ppmp GROUP BY ppmp_year ORDER BY ppmp_year ASC");
+                                  while($arow = $a->fetch()){
+                                ?>
+                                <option value="<?php echo $arow['ppmp_year']; ?>"><?php echo $arow['ppmp_year']; ?></option>
+                                <?php
+                                  }
+                                ?>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="col-md-1 col-sm-12 col-xs-12">
+                            <div class="form-group">
+                              <label>&nbsp;</label>
+                              <button type="button" class="btn btn-primary" onclick="loadConsolidated()">Consolidate</button>
+                            </div>
+                          </div>
+                          <div class="col-md-6 col-sm-12 col-xs-12"> 
+                            <div class="form-group">
+                              <label>Purpose:</label>
+                              <input type="text" class="form-control" name="request_purpose">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="table-responsive">
+                            <table class="table table-striped jambo_table" id="tblConsolidated">
+                              <thead>
+                                <tr>
+                                  <th></th>
+                                  <th>Item Name / Description</th>
+                                  <th>Item Quantity</th>
+                                  <th>Item Unit</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-md-1 col-sm-12 col-xs-12">
+                            <div class="form-group">
+                              <button type="submit" name="frmSubmit" class="btn btn-primary">Submit</button>
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                </div>
+              </div>
+              <?php
+                    }else{
+              ?>
+              <div class="alert alert-danger">
+                  <strong>Oops!</strong> Looks like you manage to change the url. Please go back or choose one of the navigation links on the left
+              </div>
+              <?php
+                    }
+                  }else{
+              ?>
+              <div class="alert alert-danger">
+                  <strong>Oops!</strong> Looks like you manage to change the url. Please go back or choose one of the navigation links on the left
+              </div>
+              <?php
+                  }
+                }else{
+              ?>
+              <!-- PPMPs List -->
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="x_panel">
                   <div id="loading_modal">
@@ -94,6 +246,7 @@
                         <tbody>
                         </tbody>
                     </table>
+                    <a href="list_ppmp.php?type=create&h=<?php echo md5('h'); ?>" class="btn btn-primary btn-xs"><span class="fa fa-plus"></span> Create APP</a>
                     <div class="modal fade ppmp_items" tabindex="-1" role="dialog" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
@@ -140,6 +293,69 @@
                   </div>
                 </div>
               </div>
+
+
+              <!-- APP List -->
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                  <div class="loading_modal">
+                    <div class="loading-circle"></div>
+                  </div>
+                  <div class="x_title">
+                    <h2>List of All APPs</h2>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                     <table id="dtAPP" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>For the Year</th>
+                                <th>Total Supplies</th>
+                                <th>Total Equipments</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <div class="modal fade app_items" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+
+                                <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate id="frmTransfer">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
+                                        </button>
+                                        <h4 class="modal-title">QR Codes</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <table id="dtAPPItems" class="table table-striped table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Item Name/Description</th>
+                                                    <th>Quantity (Unit)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <?php
+                }
+              ?>
             </div>
           </div>
         </div>
@@ -185,6 +401,8 @@
     <script src="../vendors/sweetalert/sweetalert.min.js"></script>
     <!-- select2 -->
     <script src="../vendors/select2/js/select2.full.min.js"></script>
+    <!-- iCheck -->
+    <script src="../vendors/iCheck/icheck.min.js"></script>
 
     <!-- Custom Theme Scripts -->
     <script src="../build/js/custom.js"></script>
