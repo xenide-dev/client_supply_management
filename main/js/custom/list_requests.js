@@ -137,7 +137,11 @@ function loadList(t){
                             if(element.status == "Processing"){
                                 actions += issuance;
                             }else if(element.status == "Ready" || element.status == "Delivered"){
-                                actions += printPAR + printICS;
+                                if(element.ics_par.indexOf("par") >= 0){
+                                    actions += printPAR;
+                                }else if(element.ics_par.indexOf("ics") >= 0){
+                                    actions += printICS
+                                }
                             }
                         }else if(element.request_type == "Purchase Request"){
                             if(element.status == "Approved"){

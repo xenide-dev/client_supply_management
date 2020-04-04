@@ -163,7 +163,7 @@ function init_select2(id, pID){
             data: {
                 type: 'item',
                 id: $(this).val(),
-                operation: 'get'
+                operation: 'getItemPPMP'
             },
             success: function(data){
                 if(data.msg){

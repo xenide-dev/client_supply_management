@@ -196,7 +196,13 @@
                         </tbody>
                       </table>
                       <div>
+                        <?php
+                          if($_SESSION["user_type"] == "Administrator"){
+                        ?>
                         <a href="list_supplies.php?type=make_request" class="btn btn-success btn-xs"><span class="fa fa-plus"> Make Purchase Request</span></a>
+                        <?php
+                          }
+                        ?>
                       </div>
                   </div>
                 </div>

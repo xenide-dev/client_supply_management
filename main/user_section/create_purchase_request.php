@@ -5,6 +5,8 @@
   if(!isset($_SESSION["username"])){
     header("Location: ../login.php");
   }
+
+  $_SESSION["create_request_type"] = "purchase_request";
 ?>
 <!DOCTYPE html>
 <html lang="en">
