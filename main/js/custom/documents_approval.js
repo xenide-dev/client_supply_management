@@ -2,6 +2,21 @@ $(document).ready(function(){
     $("#dtList").DataTable();
 });
 
+function formatCurrency(val, isIncludeDecimal){
+    if(isIncludeDecimal){
+        return new Intl.NumberFormat('en-PH', { style: 'decimal', currency: 'PHP', minimumFractionDigits: 2 }).format(val);
+    }else{
+        // get the whole number only
+        if(val.indexOf('.') > 0){
+            var wholeVal = val.substr(0, val.indexOf('.'));
+            var f = wholeVal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+            return f + val.substr(val.indexOf('.'));
+        }else{
+            return val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+        }
+    }
+}
+
 function loadData(id, tableName, containerID){
     if(tableName == 'request'){
         $.ajax({
@@ -11,20 +26,46 @@ function loadData(id, tableName, containerID){
             data: {
                 type: 'request',
                 id: id,
-                operation: 'getAllItems'
+                operation: 'getAllItemsPO'
             },
             success: function(data){
                 if(data.msg){
                     $(containerID).empty();
                     $.each( data.info, function( key, value ) {
                         var temp = 
-                            `<tr>
-                                <th scope="row">` + (key + 1) + `</th>
-                                <td>` + value.item_code + `</td>
-                                <td>` + (value.item_name + " (" + value.item_description + ")") + `</td>
-                                <td>` + value.requested_qty + `</td>
-                                <td>` + value.requested_unit + `</td>
-                            </tr>`;
+                            `<p>PO #: <b>${value.po_number}</b></p>
+                            <p>Supplier Name: <b>${value.supplier_name}</b></p>
+                            <p>Supplier Address: <b>${value.supplier_address}</b></p>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Item Code</th>
+                                        <th>Item Name/Description</th>
+                                        <th>Quantity</th>
+                                        <th>Unit of Measure</th>
+                                        <th>Unit Cost</th>
+                                        <th>Total Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                        $.each( value.items, function( key, value ) {
+                            var t = `<tr>
+                                        <td>${key + 1}</td>
+                                        <td>${value.item_code}</td>
+                                        <td>${value.item_description}</td>
+                                        <td>${value.requested_qty}</td>
+                                        <td>${value.requested_unit}</td>
+                                        <td>₱ ${formatCurrency(value.unit_cost, true)}</td>
+                                        <td>₱ ${formatCurrency(value.total_cost, true)}</td>
+                                    </tr>`;
+                            temp += t;
+                        });       
+                        temp += `</tbody>
+                            </table>
+                            <h4>Total Amount: <b>₱ ${formatCurrency(value.total_amount, true)}</b></h4>
+                            <hr/>`;
+                        
                         $(containerID).append(temp);
                     });
                 }

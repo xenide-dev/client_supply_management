@@ -60,10 +60,7 @@
                 <h3>Documents for Approval</h3>
               </div>
             </div>
-
             <div class="clearfix"></div>
-
-
             <div class="row">
                 <!-- List of documents for approval -->
               <div class="col-md-12 col-sm-12 col-xs-12">
@@ -136,7 +133,7 @@
                             <td><?php echo $row["request_purpose"]; ?></td>
                             <td><?php echo $status; ?></td>
                             <td>
-                              <a href="#" class="btn btn-success btn-xs" onclick="loadData(<?php echo $row['rid']; ?>, 'request', '#requestItemsContainer tbody');" data-toggle="modal" data-target=".view_request"><span class="fa fa-search"></span> View Items</a>
+                              <a href="#" class="btn btn-success btn-xs" onclick="loadData(<?php echo $row['rid']; ?>, 'request', '#requestItemsContainer');" data-toggle="modal" data-target=".view_request"><span class="fa fa-search"></span> View Items</a>
                               <?php
                                 // check if the last trace if it is for regional director
                                 if($row["status"] == "Pending"){
@@ -197,21 +194,9 @@
                                 </button>
                                 <h4 class="modal-title">Requested Items | <span id="requested_no">RN-01</span></h4>
                               </div>
-                              <div class="modal-body">
-                                <table class="table table-striped" id="requestItemsContainer">
-                                  <thead>
-                                    <tr>
-                                      <th>#</th>
-                                      <th>Item Code</th>
-                                      <th>Item Name/Description</th>
-                                      <th>Quantity</th>
-                                      <th>Unit of Measure</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    
-                                  </tbody>
-                                </table>
+                              <div class="modal-body" id="requestItemsContainer">
+                                
+                                
                               </div>
                               <div class="modal-footer">
                                 <button class="btn btn-default" data-dismiss="modal">Close</button>

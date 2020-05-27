@@ -3,6 +3,21 @@ $(document).ready(function(){
     loadList(t);
 });
 
+function formatCurrency(val, isIncludeDecimal){
+    if(isIncludeDecimal){
+        return new Intl.NumberFormat('en-PH', { style: 'decimal', currency: 'PHP', minimumFractionDigits: 2 }).format(val);
+    }else{
+        // get the whole number only
+        if(val.indexOf('.') > 0){
+            var wholeVal = val.substr(0, val.indexOf('.'));
+            var f = wholeVal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+            return f + val.substr(val.indexOf('.'));
+        }else{
+            return val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+        }
+    }
+}
+
 function loadList(t){
     var loadingModal = $('#loading_modal');
     var loadingCircle = $('#loading-circle');
@@ -18,10 +33,14 @@ function loadList(t){
         },
         success: function(data){
             if(data.msg){
+                console.log(data);
                 data.info.forEach(element => {
-                    var actions = 
-                    `<a href="#" class="btn btn-success btn-xs" onclick="loadData(` + element.poid + `, 'request', '#itemsContainer tbody');" data-toggle="modal" data-target=".viewItem"><span class="fa fa-search"></span> Inspect Items</a>
-                    <a href="modules/pdf_generator/generate_inspection_pdf.php?poid=${element.poid}&h=${element.h}" class="btn btn-success btn-xs" target="_blank"><span class="fa fa-search"></span> Inspection Report(PDF)</a>`;
+                    var actions = "";
+                    if(element.status == "Pending"){
+                        actions += `<a href="#" class="btn btn-success btn-xs" onclick="loadData(` + element.poid + `, 'request', '#itemsContainer tbody');" data-toggle="modal" data-target=".viewItem"><span class="fa fa-search"></span> Inspect Items</a>`;
+                    }
+                    actions += `<a href="modules/pdf_generator/generate_inspection_pdf.php?poid=${element.poid}&h=${element.h}" class="btn btn-success btn-xs" target="_blank"><span class="fa fa-search"></span> Inspection Report(PDF)</a>`;
+
                     var requestedBy = element.lname + ", " + element.fname + " " + element.midinit;
                     t.row.add([
                         element.po_number,
@@ -55,16 +74,17 @@ function loadData(id, tableName, containerID){
             success: function(data){
                 if(data.msg){
                     $(containerID).empty();
+                    var totalAmount = 0;
                     $.each( data.info, function( key, value ) {
                         var temp = 
                             `<tr>
                                 <th scope="row">` + (key + 1) + `</th>
                                 <td>` + value.item_code + `</td>
-                                <td>` + (value.item_name + " (" + value.item_description + ")") + `</td>
+                                <td style="width: 250px;">` + (value.item_name + " (" + value.item_description + ")") + `</td>
                                 <td>` + value.requested_qty + `</td>
-                                <td>` + value.requested_unit + `</td>
-                                <td>` + value.unit_cost + `</td>
-                                <td>` + value.total_cost + `</td>
+                                <td style="width: 100px;">` + value.requested_unit + `</td>
+                                <td>₱ ` + formatCurrency(value.unit_cost, true) + `</td>
+                                <td>₱ ` + formatCurrency(value.total_cost, true) + `</td>
                                 <td>
                                     <div class="checkbox">
                                         <label>
@@ -73,12 +93,14 @@ function loadData(id, tableName, containerID){
                                     </div>
                                 </td>
                             </tr>`;
+                        totalAmount += value.total_cost;
                         $(containerID).append(temp);
                         $('input.flat').iCheck({
                             checkboxClass: 'icheckbox_flat-green',
                             radioClass: 'iradio_flat-green'
                         });
                     });
+                    $("#totalAmount").text(formatCurrency(totalAmount, true));
                 }
             }
         });

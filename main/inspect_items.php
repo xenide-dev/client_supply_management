@@ -218,6 +218,7 @@
                                         
                                     </tbody>
                                 </table>
+                                <h4>Total Amount: ₱ <span id="totalAmount"></span></h4>
                               </div>
                               <div class="modal-footer">
                                 <button type="button" class="btn btn-success" onclick="processDelivery();">Save</button>

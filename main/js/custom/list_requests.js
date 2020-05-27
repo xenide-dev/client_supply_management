@@ -33,7 +33,55 @@ $(document).ready(function(){
             }
         });
     });
+
+    // add purchase order number
+    var pCounter = 1;
+    $("#btnAddOrder").on('click', function(){
+        var temp = `<div class="row poi_${pCounter}">
+                        <div class="col-md-2">
+                            <label>Purchase Order No.:</label>
+                            <input type="text" class="form-control" name="po_number[]" placeholder="Please enter purchase order number" onchange="addToTable(this)" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label>Supplier Name: </label>
+                            <input type="text" class="form-control" name="supplier_name[]" placeholder="Please enter supplier name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Supplier Address: </label>
+                            <input type="text" class="form-control" name="supplier_address[]" placeholder="Please enter supplier address" required>
+                        </div>
+                        <div class="col-md-1">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-danger form-control" onclick="deletePurchaseRow('.poi_${pCounter}')"><span class="fa fa-trash"></span></button>
+                        </div>
+                    </div>`;
+        $(".purchase_order_container").append(temp);
+        pCounter++;
+    });
 });
+
+function addToTable(id){
+    var p = $(id).parents(".row");
+    // get the value
+    var val = $(id).val();
+    if(val !== ""){
+        // check if exist
+        if($("select ." + p[0].classList.item(1)).length === 0){
+            // add to combobox
+            var option = `<option value="${val}" class="${p[0].classList.item(1)}">${val}</option>`;
+            $(".po_number_item").append(option);
+        }else{
+            $("select ." + p[0].classList.item(1)).text(val);
+            $("select ." + p[0].classList.item(1)).attr("value", val);
+        }
+    }else{
+        $("select ." + p[0].classList.item(1)).remove();
+    }
+}
+
+function deletePurchaseRow(id){
+    $(id).remove();
+}
 
 function formatCurrency(val, isIncludeDecimal){
     if(isIncludeDecimal){

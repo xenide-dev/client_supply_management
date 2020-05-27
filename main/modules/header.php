@@ -75,7 +75,7 @@
             if($total > 0){
               $message["title"] = "Pending Documents";
               $message["description"] = "You have " . $total . " document/s which require immediate attention. Please check them out!";
-              $message["link"] = "documents_approval.php";
+              $message["link"] = "inspect_items.php";
               array_push($notifContainer, $message);
             }
           }

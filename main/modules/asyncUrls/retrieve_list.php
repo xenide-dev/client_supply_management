@@ -72,21 +72,55 @@
 
                 $output["info"] = $rows;
                 $output["msg"] = true;
+            }elseif($_POST["operation"] == "getAllItemsPO"){
+                $id = $_POST["id"];
+                $output["info"] = [];
+
+                // get all purchase orders
+                $p = DB::run("SELECT * FROM purchase_order WHERE rid = ?", [$id]);
+                while($prow = $p->fetch()){
+                    $temp["po_number"] = $prow["po_number"];
+                    $temp["supplier_name"] = $prow["supplier_name"];
+                    $temp["supplier_address"] = $prow["supplier_address"];
+                    $temp["total_amount"] = $prow["total_amount"];
+                    $temp["items"] = [];
+
+                    // retrieve all the items
+                    $pi = DB::run("SELECT * FROM purchase_order_items poi JOIN request_items ri ON poi.riid = ri.riid JOIN item_dictionary i ON ri.itemid = i.itemid WHERE poi.poid = ?", [$prow["poid"]]);
+                    while($pirow = $pi->fetch()){
+                        $item["item_code"] = $pirow["item_code"];
+                        $item["item_name"] = $pirow["item_name"];
+                        $item["item_description"] = $pirow["item_description"];
+                        $item["requested_unit"] = $pirow["requested_unit"];
+                        $item["requested_qty"] = $pirow["requested_qty"];
+                        $item["unit_cost"] = $pirow["unit_cost"];
+                        $item["total_cost"] = $pirow["total_cost"];
+
+                        array_push($temp["items"], $item);
+                    }
+
+                    array_push($output["info"], $temp);
+                }
+                
+                $output["msg"] = true;
             }
         }elseif($_POST["type"] == "purchase"){
             if($_POST["operation"] == "getAll"){
                 // retrieve all purchase orders
                 $rows = [];
-                $r = DB::run("SELECT * FROM purchase_order po JOIN request r ON po.rid = r.rid JOIN user_accounts ua ON r.uid = ua.uid WHERE po.status = 'Pending' ORDER BY po.created_at ASC");
+                $r = DB::run("SELECT po.poid, ua.fname, ua.midinit, ua.lname, po.po_number, po.supplier_name, po.supplier_address, po.created_at, po.status, po.rid FROM purchase_order po JOIN request r ON po.rid = r.rid JOIN user_accounts ua ON r.uid = ua.uid  ORDER BY po.created_at ASC");
                 while($row = $r->fetch()){
                     // check if particular purchase order has been approved by RD
                     $p = DB::run("SELECT * FROM request_tracer WHERE rid = ? AND remarks = 'Purchase Order'", [$row["rid"]]);
                     $prow = $p->fetch();
 
-                    if($prow["status"] == "Approved"){
-                        $row["h"] = md5($row["poid"]);
-                        array_push($rows, $row);
-                    }
+                    // if($prow["status"] == "Approved"){
+                    //     $row["h"] = md5($row["poid"]);
+                    //     array_push($rows, $row);
+                    // }
+
+                    $row["h"] = md5($row["poid"]);
+                    array_push($rows, $row);
                 }
                 $output["info"] = $rows;
                 $output["msg"] = true;

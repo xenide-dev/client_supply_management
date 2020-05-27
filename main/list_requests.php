@@ -73,38 +73,57 @@
                   if($_GET["type"] == "make_order" && $_GET["rid"] != ""){
                     if(isset($_POST["po_number"])){
 
-                      // check if purchase order number already exist
-                      $c = DB::run("SELECT * FROM purchase_order WHERE po_number = ?", [$_POST["po_number"]]);
-                      if($crow = $c->fetch()){
+                      // TODOIMP UPDATE TO SAVE MULTIPLE PURCHASE ORDERS
+                      // check if one of the purchase order's number already exist
+                      $existPO = [];
+                      for ($i=0; $i < count($_POST["po_number"]); $i++) { 
+                        $c = DB::run("SELECT * FROM purchase_order WHERE po_number = ?", [$_POST["po_number"][$i]]);
+                        if($crow = $c->fetch()){
+                          array_push($existPO, $_POST["po_number"][$i]);
+                        }
+                      }
+                      // echo var_dump($_POST);
+                      // exit;
+                      
+                      if(count($existPO) > 0){
               ?>
               <div class="alert alert-danger">
-                <strong>Error!</strong> Purchase Order Number already exist! <a href="<?php echo $_SERVER["REQUEST_URI"]?>">Go back</a>
+                <strong>Error!</strong> The following Purchase Order Numbers already exist! <?php implode(", ", $existPO); ?><a href="<?php echo $_SERVER["REQUEST_URI"]?>">Go back</a>
               </div>
               <?php
                       }else{
-                        $po_number = strtoupper($_POST["po_number"]);
-                        $supplier_name = strtoupper($_POST["supplier_name"]);
-                        $supplier_address = strtoupper($_POST["supplier_address"]);
-                        $riid = $_POST["riid"];
-                        $unit_cost = $_POST["unit_cost"];
-                        $total_cost = $_POST["total_cost"];
-                        $total_amount = 0;
-
-                        for ($i=0; $i < count($unit_cost); $i++) {
-                          $val = str_replace(",", "", $total_cost[$i]);
-                          $total_amount += (float)$val;
-                        }
-
-                        // insert to main table
-                        $i = DB::run("INSERT INTO purchase_order(rid, po_number, supplier_name, supplier_address, total_amount, created_at) VALUES(?, ?, ?, ?, ?, ?)", [$_GET["rid"], $po_number, $supplier_name, $supplier_address, $total_amount , DB::getCurrentDateTime()]);
-                        $poid = DB::getLastInsertedID();
-
-                        // insert to sub table
                         $f = false;
-                        for ($i=0; $i < count($unit_cost); $i++) { 
-                          $ii = DB::run("INSERT INTO purchase_order_items(poid, riid, unit_cost, total_cost) VALUES(?, ?, ?, ?)", [$poid, $riid[$i], str_replace(",", "", $unit_cost[$i]), str_replace(",", "", $total_cost[$i])]);
-                          if($ii->rowCount() > 0){
-                            $f = true;
+                        for ($i=0; $i < count($_POST["po_number"]); $i++) { 
+                          $po_number = strtoupper($_POST["po_number"][$i]);
+                          $supplier_name = strtoupper($_POST["supplier_name"][$i]);
+                          $supplier_address = strtoupper($_POST["supplier_address"][$i]);
+
+                          // get the total amount per purchase order
+                          $total_amount = 0;
+                          for ($k=0; $k < count($_POST["po_number_item"]); $k++) {
+                            if($_POST["po_number_item"][$k] == $_POST["po_number"][$i]){
+                              $val = str_replace(",", "", $_POST["total_cost"][$k]);
+                              $total_amount += (float)$val;
+                            }
+                          }
+
+                          // if total amount is greater than 0 then there is an items
+                          if($total_amount > 0){
+                            // insert to main table
+                            $m = DB::run("INSERT INTO purchase_order(rid, po_number, supplier_name, supplier_address, total_amount, created_at) VALUES(?, ?, ?, ?, ?, ?)", [$_GET["rid"], $po_number, $supplier_name, $supplier_address, $total_amount , DB::getCurrentDateTime()]);
+                            $poid = DB::getLastInsertedID();
+                            
+                            // iterate items
+                            for ($j=0; $j < count($_POST["riid"]); $j++) { 
+                              // insert to sub table
+                              $riid = $_POST["riid"];
+                              if($_POST["po_number_item"][$j] == $_POST["po_number"][$i]){
+                                $ii = DB::run("INSERT INTO purchase_order_items(poid, riid, unit_cost, total_cost) VALUES(?, ?, ?, ?)", [$poid, $riid[$j], str_replace(",", "", $_POST["unit_cost"][$j]), str_replace(",", "", $_POST["total_cost"][$j])]);
+                                if($ii->rowCount() > 0){
+                                  $f = true;
+                                }
+                              }
+                            }
                           }
                         }
 
@@ -125,10 +144,6 @@
 
                         // forward to regional director for approval
                         DB::run("INSERT INTO request_tracer(tracer_no, rid, source_uid, destination_uid_type, status, remarks) VALUES(?, ?, ?, ?, ?, ?)", [intval($lrow["tracer_no"]) + 1, $_GET["rid"], $_SESSION["uid"], 'Regional Director', 'Pending', "Purchase Order"]);
-
-
-                        // TODOIMP: REMOVE THIS (Transfer to regional director side after approval)
-                        // DB::run("INSERT INTO request_tracer(tracer_no, rid, source_uid, destination_uid_type, status) VALUES(?, ?, ?, ?, ?)", [intval($lrow["tracer_no"]) + 1, $_GET["rid"], $_SESSION["uid"], 'Inspector', 'Pending']);
 
 
                       }
@@ -159,16 +174,25 @@
                               <input type="text" class="form-control" value="<?php echo $row['request_no']; ?>" readonly>
                             </div>
                             <div class="col-md-2">
-                              <label>Purchase Order No.:</label>
-                              <input type="text" class="form-control" name="po_number" placeholder="Please enter purchase order number" required>
+                              <label>&nbsp;</label>
+                              <button type="button" class="btn btn-primary form-control" id="btnAddOrder">Add Purchase Order #</button>
                             </div>
-                            <div class="col-md-3">
-                              <label>Supplier Name: </label>
-                              <input type="text" class="form-control" name="supplier_name" placeholder="Please enter supplier name" required>
-                            </div>
-                            <div class="col-md-5">
-                              <label>Supplier Address: </label>
-                              <input type="text" class="form-control" name="supplier_address" placeholder="Please enter supplier address" required>
+                          </div>
+                          <br/>
+                          <div class="purchase_order_container">
+                            <div class="row po_1">
+                              <div class="col-md-2">
+                                <label>Purchase Order No.:</label>
+                                <input type="text" class="form-control" name="po_number[]" placeholder="Please enter purchase order number" onchange="addToTable(this)" required>
+                              </div>
+                              <div class="col-md-3">
+                                <label>Supplier Name: </label>
+                                <input type="text" class="form-control" name="supplier_name[]" placeholder="Please enter supplier name" required>
+                              </div>
+                              <div class="col-md-6">
+                                <label>Supplier Address: </label>
+                                <input type="text" class="form-control" name="supplier_address[]" placeholder="Please enter supplier address" required>
+                              </div>
                             </div>
                           </div>
                           <hr/>
@@ -178,6 +202,7 @@
                                 <thead>
                                   <tr>
                                     <th>#</th>
+                                    <th>Select PO#</th>
                                     <th>Item Code</th>
                                     <th>Item Name/Description</th>
                                     <th>Quantity</th>
@@ -195,6 +220,11 @@
                                   <tr>
                                     <input type="hidden" name="riid[]" value="<?php echo $irow['riid']; ?>" required>
                                     <th scope="row"><?php echo $count; ?></th>
+                                    <th>
+                                      <select name="po_number_item[]" class="form-control po_number_item">
+                                        <option value="">-- Please select a value --</option>
+                                      </select>
+                                    </th>
                                     <td><?php echo $irow["item_code"]; ?></td>
                                     <td><?php echo $irow["item_name"] . " / (" . $irow["item_description"] . ")"; ?></td>
                                     <td class="rowQ_<?php echo $irow['riid']; ?>"><?php echo $irow["requested_qty"]; ?></td>

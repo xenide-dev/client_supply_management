@@ -97,6 +97,11 @@
     $pi = DB::run("SELECT * FROM purchase_order_items poi JOIN request_items ri ON poi.riid = ri.riid JOIN item_dictionary id ON ri.itemid = id.itemid WHERE poi.poid = ?", [$row["poid"]]);
     $totalAmount = 0;
     while($pirow = $pi->fetch()){
+        if($pirow["isDelivered"] === 0){
+            $pdf->SetTextColor(255, 0, 0);
+        }else{
+            $pdf->SetTextColor(0, 0, 0);
+        }
         $pdf->MultiCell( 25, 0, $pirow["requested_unit"], $border = "L", $align = 'C', $fill = false, $ln = 0, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 5, $valign = 'M', $fitcell = true);
         $pdf->MultiCell( 96, 0, $pirow["item_name"] . " (" . $pirow["item_description"] . ")", $border = "L", $align = 'L', $fill = false, $ln = 0, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 5, $valign = 'M', $fitcell = true);
         $pdf->MultiCell( 25, 0, number_format($pirow["unit_cost"], 2, ".", ","), $border = 0, $align = 'C', $fill = false, $ln = 0, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 5, $valign = 'M', $fitcell = true);
@@ -105,6 +110,7 @@
 
         $totalAmount += $pirow["total_cost"];
     }
+    $pdf->SetTextColor(0, 0, 0);
 
 
     $pdf->MultiCell( 25, 15, "", $border = "L", $align = 'C', $fill = false, $ln = 0, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 5, $valign = 'B', $fitcell = true);
