@@ -76,7 +76,7 @@
                     <div id="loading-circle"></div>
                   </div>
                   <div class="x_title">
-                    <h2>List of Supplies</h2>
+                    <h2>List of Equipments</h2>
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
@@ -87,6 +87,7 @@
                                 <th>Name/Description</th>
                                 <th>Qty</th>
                                 <th>Unit</th>
+                                <th>Price</th>
                                 <th>Date Issued</th>
                                 <th>Issued to</th>
                                 <th>Status</th>

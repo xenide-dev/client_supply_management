@@ -129,7 +129,10 @@
                                 }
 
                                 // check if it is APP
-                                $app_val = (strpos($row["request_no"], 'APP') >= 0 ? '' : 'PO')
+                                $app_val = (strpos($row["request_no"], 'APP') >= 0 ? '' : 'PO');
+                                if($request_type == "Purchase Order"){
+                                  $app_val = "PO";
+                                }
                               ?>
                             </td>
                             <td><?php echo $row["lname"] . ", " . $row["fname"] . " " . $row["midinit"]; ?></td>

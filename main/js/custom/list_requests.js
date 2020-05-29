@@ -58,6 +58,11 @@ $(document).ready(function(){
         $(".purchase_order_container").append(temp);
         pCounter++;
     });
+
+    // sort by
+    $("#sort_by").on('change', function(){
+        loadList(t, $(this).val());
+    });
 });
 
 function addToTable(id){
@@ -130,21 +135,24 @@ function loadData(id, tableName, containerID){
     }
 }
 
-function loadList(t){
+function loadList(t, sortBy = ""){
     var loadingModal = $('#loading_modal');
     var loadingCircle = $('#loading-circle');
     loadingCircle.css({'display' : 'block'});
     loadingModal.css({'display' : 'block'});
+    t.clear().draw();
     $.ajax({
         method: 'POST',
         url: 'modules/asyncUrls/retrieve_list.php',
         dataType: 'JSON',
         data: {
             type: 'request',
-            operation: 'getAllRequest'
+            operation: 'getAllRequest',
+            sortby: sortBy
         },
         success: function(data){
             if(data.msg){
+                console.log(data.info);
                 data.info.forEach(element => {
                     var view_items = `<button class="btn btn-primary btn-xs" onclick="loadData(` + element.rid + `, 'request', '#requestItemsContainer tbody');" data-toggle="modal" data-target=".view_request">View Items</button>`;
                     // var issuance = `<button class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'issuance', 'Ready', this)"> Ready for Issuance</button>`;

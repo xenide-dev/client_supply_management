@@ -6,7 +6,7 @@
     if(isset($_POST["type"])){
         if($_POST["type"] == "supplies"){
             if($_POST["operation"] == "getAll"){
-                $r = DB::run("SELECT * FROM supplies_equipment se JOIN item_dictionary id ON se.itemid = id.itemid ORDER BY item_name ASC");
+                $r = DB::run("SELECT * FROM supplies_equipment se JOIN item_dictionary id ON se.itemid = id.itemid WHERE id.item_type = 'Consumable' ORDER BY item_name ASC");
                 $row = $r->fetchAll();
                 $output["info"] = $row;
                 $output["msg"] = true;
@@ -19,6 +19,7 @@
                 $output["info"] = $row;
                 $output["msg"] = true;
             }elseif($_POST["operation"] == "getAllRequest"){
+                $sortby = $_POST["sortby"];
                 // retrieve all request
                 $rows = [];
 
@@ -38,7 +39,10 @@
                     }
                     // check if the last record is for approval of purchase order
                     if($irow["remarks"] != "Purchase Order"){
-                        array_push($rows, $row);
+                        // check by sort by
+                        if($row["status"] == ucfirst($sortby) || $sortby == ""){
+                            array_push($rows, $row);
+                        }
                     }
                 }
                 
@@ -144,6 +148,11 @@
                     // TODOIMP: UPDATE THE RETRIEVAL OF TRANSFER RECORDS (IF THERE IS)
                     if(isset($trow["transaction_type"])){
                         if($trow["transaction_type"] == "Out"){
+                            // get the price
+                            $p = DB::run("SELECT * FROM purchase_order_items WHERE riid = ?", [$trow["riid"]]);
+                            $prow = $p->fetch();
+                            $temp["total_cost"] = $prow["total_cost"];
+
                             $temp["itemid"] = $row["itemid"];
                             $temp["h"] = md5($row["itemid"]);
                             $temp["riid"] = $trow["riid"];

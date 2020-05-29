@@ -580,6 +580,18 @@
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
+                      <div class="row">
+                        <div class="col-md-3">
+                          <label>Sort by:</label>
+                          <select id="sort_by" class="form-control">
+                            <option value="">None</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="disapproved">Disapproved</option>
+                          </select>
+                        </div>
+                      </div>
+                      <br/>
                      <table id="dtList" class="table table-striped table-bordered">
                         <thead>
                           <tr>

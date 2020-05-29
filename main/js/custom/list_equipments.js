@@ -60,6 +60,22 @@ $(document).ready(function(){
     });
 });
 
+function formatCurrency(val, isIncludeDecimal){
+    if(isIncludeDecimal){
+        return new Intl.NumberFormat('en-PH', { style: 'decimal', currency: 'PHP', minimumFractionDigits: 2 }).format(val);
+    }else{
+        // get the whole number only
+        if(val.indexOf('.') > 0){
+            var wholeVal = val.substr(0, val.indexOf('.'));
+            var f = wholeVal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+            return f + val.substr(val.indexOf('.'));
+        }else{
+            return val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+        }
+    }
+}
+
+
 function loadList(t){
     var loadingModal = $('#loading_modal');
     var loadingCircle = $('#loading-circle');
@@ -86,6 +102,7 @@ function loadList(t){
                         element.name_description,
                         element.item_qty,
                         element.item_unit,
+                        '₱ ' + formatCurrency(element.total_cost, true),
                         element.created_at,
                         element.issued_to,
                         element.status,
