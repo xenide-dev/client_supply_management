@@ -126,7 +126,21 @@
                                                 <button type="button" class="btn btn-primary btn-xs" id="btnAddItem"><span class="fa fa-plus"></span> Add item/equipment</button>
                                             </div>
                                             <hr/>
-                                            <input type="submit" class="btn btn-primary btn-sm" name="frmsubmit" value="Submit Request">
+                                            <?php
+                                                // check if open
+                                                $e = DB::run("SELECT * FROM event_activities WHERE e_name = 'ppmp_schedule'");
+                                                if($erow = $e->fetch()){
+                                                    $evalues = json_decode($erow["e_attributes"]);
+                                            ?>
+                                            <p class="text-danger">Deadline: <?php echo $evalues->toDate; ?></p>
+                                            <input type="submit" class="btn btn-primary btn-sm" name="frmsubmit" value="Submit Request"> 
+                                            <?php
+                                                }else{
+                                            ?>
+                                            <p class="text-danger">Oops! Submission is still closed</p>
+                                            <?php
+                                                }
+                                            ?>
                                         </form>
                                     </div>
                                 </div>

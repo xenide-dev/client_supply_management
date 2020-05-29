@@ -44,6 +44,19 @@ $(document).ready(function(){
         totalItems = 0;
         $("#tblConsolidated tbody").empty();
     });
+
+    $("#frmDate").on('change', function(){
+        var prev = new Date($(this).val());
+        var copy = new Date($(this).val());
+        copy.setDate(prev.getDate() + 1)
+
+        const d = new Date(copy)
+        const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d)
+        const mo = new Intl.DateTimeFormat('en', { month: '2-digit' }).format(d)
+        const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d)
+
+        $("#toDate").attr("min", `${ye}-${mo}-${da}`);
+    });
 });
 
 function loadList(t){
@@ -211,7 +224,8 @@ function loadAPP(t){
             if(data.msg){
                 data.info.forEach(element => {
                     var actions = 
-                        `<button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".app_items" data-backdrop="static" onclick="loadAPPItems(${element.aid})">View Items</button>`;
+                        `<button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".app_items" data-backdrop="static" onclick="loadAPPItems(${element.aid})">View Items</button>
+                        <a href="modules/pdf_generator/generate_app_pdf.php?aid=${element.aid}&h=${element.hash}" class="btn btn-primary btn-xs" target="_blank">Generate PDF</a>`;
                     t.row.add([
                         element.created_at,
                         element.app_year,

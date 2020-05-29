@@ -2,6 +2,9 @@
   include "connection/connection.php";
   session_start();
 
+  // TODOIMP close the ppmp schedule if the current date is greater than the deadline
+
+
   if(isset($_SESSION["event"])){
     if($_SESSION["event"] == "change_pass"){
       header("Location: new_pass.php");

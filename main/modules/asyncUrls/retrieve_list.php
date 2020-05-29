@@ -270,11 +270,14 @@
             }
         }elseif($_POST["type"] == "app"){
             if($_POST["operation"] == "getAll"){
-
+                $rows = [];
                 $a = DB::run("SELECT * FROM app ORDER BY app_year");
-                $arow = $a->fetchAll();
+                while($arow = $a->fetch()){
+                    $arow["hash"] = md5($arow["aid"]);
+                    array_push($rows, $arow);
+                }
 
-                $output["info"] = $arow;
+                $output["info"] = $rows;
                 $output["msg"] = true;
             }elseif($_POST["operation"] == "getAllItems"){
                 $aid = $_POST["aid"];

@@ -17,7 +17,7 @@ function formatCurrency(val, isIncludeDecimal){
     }
 }
 
-function loadData(id, tableName, containerID){
+function loadData(id, tableName, containerID, additional_info = ''){
     if(tableName == 'request'){
         $.ajax({
             method: 'POST',
@@ -26,48 +26,76 @@ function loadData(id, tableName, containerID){
             data: {
                 type: 'request',
                 id: id,
-                operation: 'getAllItemsPO'
+                operation: (additional_info == 'PO' ? 'getAllItemsPO' : 'getAllItems')
             },
             success: function(data){
                 if(data.msg){
                     $(containerID).empty();
-                    $.each( data.info, function( key, value ) {
-                        var temp = 
-                            `<p>PO #: <b>${value.po_number}</b></p>
-                            <p>Supplier Name: <b>${value.supplier_name}</b></p>
-                            <p>Supplier Address: <b>${value.supplier_address}</b></p>
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Item Code</th>
-                                        <th>Item Name/Description</th>
-                                        <th>Quantity</th>
-                                        <th>Unit of Measure</th>
-                                        <th>Unit Cost</th>
-                                        <th>Total Cost</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
-                        $.each( value.items, function( key, value ) {
+                    var temp = "";
+                    if(additional_info == ""){
+                        temp = `<table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Item Code</th>
+                                            <th>Item Name/Description</th>
+                                            <th>Quantity</th>
+                                            <th>Unit of Measure</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                        $.each( data.info, function( key, value ) {
                             var t = `<tr>
                                         <td>${key + 1}</td>
                                         <td>${value.item_code}</td>
                                         <td>${value.item_description}</td>
                                         <td>${value.requested_qty}</td>
                                         <td>${value.requested_unit}</td>
-                                        <td>₱ ${formatCurrency(value.unit_cost, true)}</td>
-                                        <td>₱ ${formatCurrency(value.total_cost, true)}</td>
                                     </tr>`;
                             temp += t;
                         });       
                         temp += `</tbody>
-                            </table>
-                            <h4>Total Amount: <b>₱ ${formatCurrency(value.total_amount, true)}</b></h4>
-                            <hr/>`;
-                        
+                            </table>`;
                         $(containerID).append(temp);
-                    });
+                    }else{
+                        $.each( data.info, function( key, value ) {
+                            temp = 
+                                `<p>PO #: <b>${value.po_number}</b></p>
+                                <p>Supplier Name: <b>${value.supplier_name}</b></p>
+                                <p>Supplier Address: <b>${value.supplier_address}</b></p>
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Item Code</th>
+                                            <th>Item Name/Description</th>
+                                            <th>Quantity</th>
+                                            <th>Unit of Measure</th>
+                                            <th>Unit Cost</th>
+                                            <th>Total Cost</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                            $.each( value.items, function( key, value ) {
+                                var t = `<tr>
+                                            <td>${key + 1}</td>
+                                            <td>${value.item_code}</td>
+                                            <td>${value.item_description}</td>
+                                            <td>${value.requested_qty}</td>
+                                            <td>${value.requested_unit}</td>
+                                            <td>₱ ${formatCurrency(value.unit_cost, true)}</td>
+                                            <td>₱ ${formatCurrency(value.total_cost, true)}</td>
+                                        </tr>`;
+                                temp += t;
+                            });       
+                            temp += `</tbody>
+                                </table>
+                                <h4>Total Amount: <b>₱ ${formatCurrency(value.total_amount, true)}</b></h4>
+                                <hr/>`;
+                            
+                            $(containerID).append(temp);
+                        });
+                    }
                 }
             }
         });

@@ -127,13 +127,16 @@
                                   echo $row["request_type"]; 
                                   $request_type = $row["request_type"];
                                 }
+
+                                // check if it is APP
+                                $app_val = (strpos($row["request_no"], 'APP') >= 0 ? '' : 'PO')
                               ?>
                             </td>
                             <td><?php echo $row["lname"] . ", " . $row["fname"] . " " . $row["midinit"]; ?></td>
                             <td><?php echo $row["request_purpose"]; ?></td>
                             <td><?php echo $status; ?></td>
                             <td>
-                              <a href="#" class="btn btn-success btn-xs" onclick="loadData(<?php echo $row['rid']; ?>, 'request', '#requestItemsContainer');" data-toggle="modal" data-target=".view_request"><span class="fa fa-search"></span> View Items</a>
+                              <a href="#" class="btn btn-success btn-xs" onclick="loadData(<?php echo $row['rid']; ?>, 'request', '#requestItemsContainer', '<?php echo $app_val; ?>');" data-toggle="modal" data-target=".view_request"><span class="fa fa-search"></span> View Items</a>
                               <?php
                                 // check if the last trace if it is for regional director
                                 if($row["status"] == "Pending"){

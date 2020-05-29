@@ -220,6 +220,45 @@
               <?php
                   }
                 }else{
+
+                  if(isset($_POST["btn_schedule"])){
+                    $frmDate = $_POST["frmDate"];
+                    $toDate = $_POST["toDate"];
+
+                    $values["frmDate"] = $frmDate;
+                    $values["toDate"] = $toDate;
+
+                    // check if schedule event is set
+                    $s = DB::run("SELECT * FROM event_activities WHERE e_name = ?", ["ppmp_schedule"]);
+                    if($srow = $s->fetch()){
+                      // just update
+                      $u = DB::run("UPDATE event_activities SET e_attributes = ? WHERE e_name = ?", [json_encode($values), "ppmp_schedule"]);
+                    }else{
+                      // create
+                      $c = DB::run("INSERT INTO event_activities(e_name, e_attributes) VALUES(?, ?)", ["ppmp_schedule", json_encode($values)]);
+                    }
+
+              ?>
+              <div class="alert alert-success">
+                  <strong>Success!</strong> Date of submission has been set 
+              </div>
+              <?php
+                  }
+
+                  if(isset($_POST["close_schedule"])){
+                    $d = DB::run("DELETE FROM event_activities WHERE e_name = 'ppmp_schedule'");
+                    if($d->rowCount() > 0){
+              ?>
+              <div class="alert alert-success">
+                  <strong>Success!</strong> Date of submission has been cleared 
+              </div>
+              <?php
+                    }
+                  }
+
+                  $e = DB::run("SELECT * FROM event_activities WHERE e_name = ?", ["ppmp_schedule"]);
+                  $erow = $e->fetch();
+                  $evalues = (isset($erow["e_attributes"]) ? json_decode($erow["e_attributes"]) : null);
               ?>
               <!-- PPMPs List -->
               <div class="col-md-12 col-sm-12 col-xs-12">
@@ -232,6 +271,7 @@
                     <div class="clearfix"></div>
                   </div>
                   <div class="x_content">
+                      <p>PPMPs submission date: <b><?php echo ($evalues == null) ? 'n/a' : $evalues->frmDate . " to " . $evalues->toDate; ?></b></p>
                      <table id="dtList" class="table table-striped table-bordered">
                         <thead>
                             <tr>
@@ -247,6 +287,16 @@
                         </tbody>
                     </table>
                     <a href="list_ppmp.php?type=create&h=<?php echo md5('h'); ?>" class="btn btn-primary btn-xs"><span class="fa fa-plus"></span> Create APP</a>
+                    <button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target=".set_schedule" data-backdrop="static"><span class="fa fa-calendar"></span> Set Schedule</button>
+                    <?php
+                      if(isset($erow["e_attributes"])){
+                    ?>
+                    <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" style="display: inline;">
+                      <button type="submit" class="btn btn-danger btn-xs" name="close_schedule"><span class="fa fa-times"></span> Delete the schedule</button>
+                    </form>
+                    <?php
+                      }
+                    ?>
                     <div class="modal fade ppmp_items" tabindex="-1" role="dialog" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
@@ -290,6 +340,30 @@
                             </div>
                         </div>
                     </div>
+                    <div class="modal fade set_schedule" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+                                <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate id="frmTransfer">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
+                                        </button>
+                                        <h4 class="modal-title">Set Schedule for ppmp submission</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <label>Select date for opening:</label>
+                                        <input type="date" min="<?php echo date("Y-m-d"); ?>" class="form-control" id="frmDate" name="frmDate" required>
+                                        <br/>
+                                        <label>Select date for closing:</label>
+                                        <input type="date" min="<?php echo date ('Y-m-d' , strtotime(date("Y-m-d") . ' + 1 day' )); ?>" class="form-control" id="toDate" name="toDate" required>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary" name="btn_schedule">Save</button>
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -322,7 +396,6 @@
                     <div class="modal fade app_items" tabindex="-1" role="dialog" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
-
                                 <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST" data-parsley-validate id="frmTransfer">
                                     <div class="modal-header">
                                         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
@@ -346,7 +419,6 @@
                                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                     </div>
                                 </form>
-
                             </div>
                         </div>
                     </div>
@@ -396,7 +468,7 @@
     <script src="../vendors/pnotify/dist/pnotify.buttons.js"></script>
     <script src="../vendors/pnotify/dist/pnotify.nonblock.js"></script>
     <!-- Parsley -->
-    <script src="../vendors/parsleyjs/dist/parsley.min.js"></script>
+    <!-- <script src="../vendors/parsleyjs/dist/parsley.min.js"></script> -->
     <!-- sweetalert -->
     <script src="../vendors/sweetalert/sweetalert.min.js"></script>
     <!-- select2 -->
