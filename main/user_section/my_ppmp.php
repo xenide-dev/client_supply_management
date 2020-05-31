@@ -73,8 +73,8 @@
                                                     <td><?php echo $prow["total_equipments"]; ?></td>
                                                     <td>
                                                         <button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target=".view_ppmp" data-backdrop="static" onclick="loadData(<?php echo $prow['pid']; ?>, <?php echo $_SESSION['uid']; ?>)">View Items</button>
-                                                        <button class="btn btn-success btn-xs">Update</button>
-                                                        <button class="btn btn-danger btn-xs">Delete</button>
+                                                        <!-- <button class="btn btn-success btn-xs">Update</button>
+                                                        <button class="btn btn-danger btn-xs">Delete</button> -->
                                                     </td>
                                                 </tr>
                                                 <?php

@@ -92,6 +92,13 @@
         <?php
           }
         ?>
+        <?php
+          if(strpos($privileges, 'inspection_supplies_equipments') !== false){
+        ?>
+        <li><a href="inspect_items.php"><i class="fa fa-search"></i> Inspection of Supplies / Equipments</a></li>
+        <?php
+          }
+        ?>
       </ul>
     </div>
     <div class="menu_section">

@@ -12,5 +12,21 @@
         }
     }
 
+    if(isset($_POST["type"])){
+        if($_POST["type"] == "account"){
+            if($_POST["operation"] == "status"){
+                $status = $_POST["status"];
+                $uid = $_POST["uid"];
+                
+                $isActive = ($status == 'deactivate') ? 0 : 1;
+
+                $u = DB::run("UPDATE user_accounts SET isActive = ? WHERE uid = ?", [$isActive, $uid]);
+                if($u->rowCount() > 0){
+                    $output["msg"] = true;
+                }
+            }
+        }
+    }
+
     echo json_encode($output);
 ?>

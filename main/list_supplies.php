@@ -189,7 +189,7 @@
                             <th width="100">Item Type</th>
                             <th width="100">Reorder Point (Percentage)</th>
                             <th>Last Update</th>
-                            <th>Actions</th>
+                            <!-- <th>Actions</th> -->
                           </tr>
                         </thead>
                         <tbody>

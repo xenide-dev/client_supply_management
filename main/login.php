@@ -14,35 +14,42 @@
     header("Location: index.php");
   }
   $error = false;
+  $isActive = 1;
   if(isset($_POST["submit"])){
     $username = $_POST["username"];
     $password = md5($_POST["password"]);
 
     $test = DB::run("SELECT * FROM user_accounts WHERE username = ? AND password = ?", [$username, $password]);
     if($row = $test->fetch()){
-      $_SESSION["uid"] = $row["uid"];
-      $_SESSION["user_type"] = $row["user_type"];
-      $_SESSION["full_name"] = $row["fname"] . " " . $row["midinit"] . "." . " " . $row["lname"];
-      
-      // check if new acct
-      if($row["temp_pass"] != null){
-        $_SESSION["event"] = "change_pass";
+      if($row["isActive"] == 1){
+        $_SESSION["uid"] = $row["uid"];
+        $_SESSION["user_type"] = $row["user_type"];
+        $_SESSION["full_name"] = $row["fname"] . " " . $row["midinit"] . "." . " " . $row["lname"];
+        
+        // check if new acct
+        if($row["temp_pass"] != null){
+          $_SESSION["event"] = "change_pass";
 
-        DB::insertLog($row["uid"], "Redirect", "Redirect user to 'change password' page", "CHANGE PASS");
-        header("Location: new_pass.php");
-      }else{
-        $_SESSION["username"] = $row["username"];
-        $_SESSION["privileges"] = $row["priviledges"];
-        
-        DB::insertLog($row["uid"], "User Accessed", "None", "LOG-IN");
-        // update online status
-        DB::run("UPDATE user_accounts SET isOnline = 1 WHERE uid = ?", [$row["uid"]]);
-        
-        if($_SESSION["user_type"] == "User"){
-          header("Location: user_section/index.php");
+          DB::insertLog($row["uid"], "Redirect", "Redirect user to 'change password' page", "CHANGE PASS");
+          header("Location: new_pass.php");
         }else{
-          header("Location: index.php");
+          $_SESSION["username"] = $row["username"];
+          $_SESSION["privileges"] = $row["priviledges"];
+          
+          DB::insertLog($row["uid"], "User Accessed", "None", "LOG-IN");
+          // update online status
+          DB::run("UPDATE user_accounts SET isOnline = 1 WHERE uid = ?", [$row["uid"]]);
+          
+          if($_SESSION["user_type"] == "User"){
+            header("Location: user_section/index.php");
+          }else{
+            header("Location: index.php");
+          }
         }
+      }else{
+        // deactivated account
+        $error = true;
+        $isActive = 0;
       }
     }else{
       $error = true;
@@ -85,6 +92,20 @@
               <h1>Welcome User</h1>
               <?php
                 if($error){
+                  if(!$isActive){
+              ?>
+              <div class="alert alert-danger alert-dismissible fade in" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span>
+                </button>
+                Oops! Looks like your account has been deactivated.
+              </div>
+              <?php
+                  }
+                }
+              ?>
+              <?php
+                if($error){
+                  if($isActive){
               ?>
               <div class="alert alert-danger alert-dismissible fade in" role="alert">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span>
@@ -92,6 +113,7 @@
                 Account doesn't exist!
               </div>
               <?php
+                  }
                 }
               ?>
               <div>

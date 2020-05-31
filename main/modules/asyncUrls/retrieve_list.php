@@ -241,6 +241,12 @@
                 // retrieve item
                 $q = DB::run("SELECT * FROM supplies_equipment_transaction_qr_collection qr JOIN supplies_equipment_transaction st ON qr.stid = st.stid JOIN user_accounts ua ON st.destination_uid = ua.uid JOIN request_items ri ON st.riid = ri.riid JOIN item_dictionary id ON ri.itemid = id.itemid WHERE qr.item_number = ?", [$qr_code]);
                 if($qrow = $q->fetch()){
+                    // get the prices
+                    $p = DB::run("SELECT * FROM purchase_order_items WHERE riid = ?", [$qrow["riid"]]);
+                    $prow = $p->fetch();
+                    $qrow["price"] = $prow["unit_cost"];
+
+
                     $output["info"] = $qrow;
                 }
 

@@ -24,8 +24,10 @@ $(document).ready(function() {
                         if(data.msg){
                             if(data.info != undefined){
                                 var outputText = "Current Owner: " + data.info.lname + ", " + data.info.fname + " " + data.info.midinit + "\n" +
-                                "Item: " + data.info.item_name + "(" + data.info.item_description + ")" + "\n" +
+                                "Item: " + data.info.item_name  + "\n" +
+                                "Item Description: " + data.info.item_description + "\n" +
                                 "Item Code: " + result.code + "\n" +
+                                "Unit Cost: ₱ " + formatCurrency(data.info.price, true) + "\n" +
                                 "Showing 1 out of " + data.info.item_qty + " item/s";
                                 swal({
                                     title: "Success!",
@@ -81,3 +83,18 @@ $(document).ready(function() {
         });
     });
 });
+
+function formatCurrency(val, isIncludeDecimal){
+    if(isIncludeDecimal){
+        return new Intl.NumberFormat('en-PH', { style: 'decimal', currency: 'PHP', minimumFractionDigits: 2 }).format(val);
+    }else{
+        // get the whole number only
+        if(val.indexOf('.') > 0){
+            var wholeVal = val.substr(0, val.indexOf('.'));
+            var f = wholeVal.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+            return f + val.substr(val.indexOf('.'));
+        }else{
+            return val.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+        }
+    }
+}

@@ -213,7 +213,7 @@
                           <tr>
                             <td><?php echo $row["lname"] . ", " . $row["fname"] . " " . $row["midinit"] . "."; ?></td>
                             <td><?php echo $row["user_type"]; ?></td>
-                            <td><?php echo ($row["isActive"] == 1 ? "Active" : ""); ?></td>
+                            <td><?php echo ($row["isActive"] == 1 ? "Active" : "Inactive"); ?></td>
                             <td>
                               <?php 
                                 if($row["gmt_last_access"] == null && $row["temp_pass"] != null){
@@ -232,11 +232,11 @@
                               <?php 
                                 if($row["isActive"]){
                               ?>
-                              <button class="btn btn-danger btn-xs">Deactivate</button>
+                              <button class="btn btn-danger btn-xs" onclick="toggle_account_status(<?php echo $row['uid']; ?>, 'deactivate')">Deactivate</button>
                               <?php
                                 }else{
                               ?>
-                              <button class="btn btn-success btn-xs">Activate</button>
+                              <button class="btn btn-success btn-xs" onclick="toggle_account_status(<?php echo $row['uid']; ?>, 'activate')">Activate</button>
                               <?php
                                 }
                               ?>
@@ -507,6 +507,8 @@
     <script src="../vendors/parsleyjs/dist/parsley.min.js"></script>
     <!-- jquery.inputmask -->
     <script src="../vendors/jquery.inputmask/dist/min/jquery.inputmask.bundle.min.js"></script>
+    <!-- sweetalert -->
+    <script src="../vendors/sweetalert/sweetalert.min.js"></script>
 
     <!-- Custom Theme Scripts -->
     <script src="../build/js/custom.js"></script>

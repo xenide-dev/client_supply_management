@@ -130,7 +130,7 @@ function loadList(t){
                         element.item_type,
                         element.reorder_point,
                         element.updated_at,
-                        actions
+                        // actions
                     ]).draw();
                 });
                 loadingCircle.css({'display' : 'none'});

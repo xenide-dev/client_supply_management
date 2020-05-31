@@ -9,6 +9,38 @@ $(document).ready(function(){
 });
 
 // functions
+function toggle_account_status(uid, status){
+    swal({
+        title: "Warning!",
+        text: 'Are you sure you want to ' + status + ' this account?',
+        icon: "warning",
+        buttons: ["No", "Yes"],
+        dangerMode: true,
+    }).then((value) => {
+        if(value){
+            // process ajax submission
+            $.ajax({
+                method: 'POST',
+                url: 'modules/asyncUrls/manage_account.php',
+                dataType: 'JSON',
+                data: {
+                    type: 'account',
+                    operation: 'status',
+                    status: status,
+                    uid: uid
+                },
+                success: function(data){
+                    if(data.msg){
+                        swal("Success!", "Account has been '" + (status + 'd') + "'", "success").then(() => {
+                            window.location.reload();
+                        });
+                    }
+                }
+            });
+        }
+    });
+}
+
 function showInfo(uid, fname, mname, lname, privileges) {
     $('#uid').val(uid);
     $('#fname').val(fname);
