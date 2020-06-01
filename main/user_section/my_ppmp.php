@@ -47,7 +47,7 @@
                             <div class="col-md-12">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h5 class="card-title m-0">List of Equipments</h5>
+                                        <h5 class="card-title m-0">List of PPMPs</h5>
                                     </div>
                                     <div class="card-body">
                                         <table class="table table-bordered table-striped dt-responsive dtList" style="width: 100%;">
@@ -57,6 +57,7 @@
                                                     <th>Date</th>
                                                     <th>Total Supplies</th>
                                                     <th>Total Equipments</th>
+                                                    <th>Status</th>
                                                     <th>Action</th>
                                                 </tr>
                                             </thead>
@@ -71,6 +72,23 @@
                                                     <td><?php echo DB::formatDateTime($prow["created_at"]); ?></td>
                                                     <td><?php echo $prow["total_supplies"]; ?></td>
                                                     <td><?php echo $prow["total_equipments"]; ?></td>
+                                                    <td>
+                                                        <?php
+                                                            if($prow["status"] == "Pending"){
+                                                        ?>
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        <?php
+                                                            }else if($prow["status"] == "Approved"){
+                                                        ?>
+                                                            <span class="badge bg-success">Approved</span>
+                                                        <?php    
+                                                            }else if($prow["status"] == "Disapproved"){
+                                                        ?>
+                                                            <span class="badge bg-danger">Disapproved</span>
+                                                        <?php    
+                                                            }
+                                                        ?>
+                                                    </td>  
                                                     <td>
                                                         <button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target=".view_ppmp" data-backdrop="static" onclick="loadData(<?php echo $prow['pid']; ?>, <?php echo $_SESSION['uid']; ?>)">View Items</button>
                                                         <!-- <button class="btn btn-success btn-xs">Update</button>

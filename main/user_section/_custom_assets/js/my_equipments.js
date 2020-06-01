@@ -12,26 +12,17 @@ $(document).ready(function(){
                 if(val){
                     $.ajax({
                         method: 'POST',
-                        url: '_modules/asyncUrls/data-entry.php',
+                        url: '_modules/asyncUrls/data_entry.php',
                         dataType: 'JSON',
                         data: {
                             type: 'equipments',
                             operation: 'report',
-                            riid: riid,
+                            riid: $("#riid").val(),
                             statusReport: $("#status").val()
                         },
                         success: function(data){
                             if(data.msg){
-                                $("#equipmentHistoryContainer tbody").empty();
-                                $.each( data.info, function( key, value ) {
-                                    var temp = 
-                                        `<tr>
-                                            <th>${value.date_issued}</th>
-                                            <td>${value.name}</td>
-                                            <td>${value.acquisition}</td>
-                                        </tr>`;
-                                    $("#equipmentHistoryContainer tbody").append(temp);
-                                });
+                               window.location.reload();
                             }
                         }
                     });

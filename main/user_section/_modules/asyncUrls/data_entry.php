@@ -23,12 +23,19 @@
                     $output["msg"] = true;
                 }
             }
-        }elseif($_POST["type"] == "equipment"){
+        }elseif($_POST["type"] == "equipments"){
             if($_POST["operation"] == "report"){
                 $riid = $_POST["riid"];
                 $status = $_POST["statusReport"];
 
-                // TODOIMP: FOR EQUIPMENT"S STATUS
+                if($status == "Serviceable"){
+                    $status = null;
+                }
+                // TODOIMP: FOR EQUIPMENT'S STATUS
+                $s = DB::run("UPDATE supplies_equipment_transaction SET item_status = ? WHERE riid = ?", [$status, $riid]);
+                if($s->rowCount() > 0){
+                    $output["msg"] = true;
+                }
             }
         }
     }

@@ -71,44 +71,50 @@
                                                     while($row = $r->fetch()){
                                                         // get the transaction
                                                         $t = DB::run("SELECT * FROM supplies_equipment_transaction WHERE riid = ? ORDER BY created_at DESC", [$row["riid"]]);
-                                                        $trow = $t->fetch();
-                                                        // check if the last transaction is out
-                                                        //TODOIMP: UPDATE FOR TRANSFER
-                                                        if($trow["transaction_type"] == "Out"){
-                                                            // check if the destination_uid is the same as the user
-                                                            if($trow["destination_uid"] == $_SESSION["uid"]){
-                                                ?>
-                                                <tr>
-                                                    <td><?php echo $trow["report_item_no"]; ?></td>
-                                                    <td><?php echo $row["item_name"] . "(" . $row["item_description"] . ")"; ?></td>
-                                                    <td><?php echo $row["requested_qty"]; ?></td>
-                                                    <td><?php echo $row["requested_unit"]; ?></td>
-                                                    <td><?php echo $trow["created_at"]; ?></td>
-                                                    <td>
-                                                        <?php
-                                                            if($trow["remarks"] == "Request"){
-                                                                echo "Serviceable";
-                                                            }else{
-                                                                // description of the transfer from whom
-                                                                echo "Something";
-                                                            }
-                                                        ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php 
-                                                            if($trow["remarks"] != "Transfer"){
-                                                                echo "N/A";
-                                                            }else{
-                                                                echo $trow["created_at"];
-                                                            } 
-                                                        ?>
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".view_equipment_history" onclick="loadEquipmentHistory(<?php echo $trow['riid']; ?>);" data-backdrop="static">View Equipment History</button>
-                                                        <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".report_status" onclick="changeStatus(<?php echo $trow['riid']; ?>);" data-backdrop="static">Change Status</button>
-                                                    </td>
-                                                </tr>
-                                                <?php
+                                                        if($trow = $t->fetch()){
+                                                            // check if the last transaction is out
+                                                            //TODOIMP: UPDATE FOR TRANSFER
+                                                            if($trow["transaction_type"] == "Out"){
+                                                                // check if the destination_uid is the same as the user
+                                                                if($trow["destination_uid"] == $_SESSION["uid"]){
+                                                    ?>
+                                                    <tr>
+                                                        <td><?php echo $trow["report_item_no"]; ?></td>
+                                                        <td><?php echo $row["item_name"] . "(" . $row["item_description"] . ")"; ?></td>
+                                                        <td><?php echo $row["requested_qty"]; ?></td>
+                                                        <td><?php echo $row["requested_unit"]; ?></td>
+                                                        <td><?php echo $trow["created_at"]; ?></td>
+                                                        <td>
+                                                            <?php
+                                                                if($trow["remarks"] == "Request"){
+                                                                    // check item_status (if null serviceable otherwise print text)
+                                                                    if($trow["item_status"] == null){
+                                                                        echo "Serviceable";
+                                                                    }else{
+                                                                        echo $trow["item_status"];
+                                                                    }
+                                                                }else{
+                                                                    // description of the transfer from whom
+                                                                    echo "Something";
+                                                                }
+                                                            ?>
+                                                        </td>
+                                                        <td>
+                                                            <?php 
+                                                                if($trow["remarks"] != "Transfer"){
+                                                                    echo "N/A";
+                                                                }else{
+                                                                    echo $trow["created_at"];
+                                                                } 
+                                                            ?>
+                                                        </td>
+                                                        <td>
+                                                            <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".view_equipment_history" onclick="loadEquipmentHistory(<?php echo $trow['riid']; ?>);" data-backdrop="static">View Equipment History</button>
+                                                            <button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".report_status" onclick="changeStatus(<?php echo $trow['riid']; ?>);" data-backdrop="static">Change Status</button>
+                                                        </td>
+                                                    </tr>
+                                                    <?php
+                                                                }
                                                             }
                                                         }
                                                     }

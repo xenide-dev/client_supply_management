@@ -277,7 +277,7 @@
                 $app_year = $_POST["app_year"];
                 
                 // retrieve all unique items
-                $r = DB::run("SELECT pi.itemid, SUM(pi.requested_qty) as total, pi.requested_unit, id.item_name, id.item_description FROM ppmp_items pi JOIN ppmp p ON pi.pid = p.pid JOIN item_dictionary id ON id.itemid = pi.itemid WHERE p.ppmp_year = ? GROUP BY pi.itemid", [$app_year]);
+                $r = DB::run("SELECT pi.itemid, SUM(pi.requested_qty) as total, pi.requested_unit, id.item_name, id.item_description FROM ppmp_items pi JOIN ppmp p ON pi.pid = p.pid JOIN item_dictionary id ON id.itemid = pi.itemid WHERE p.ppmp_year = ? AND p.status = 'Approved' GROUP BY pi.itemid", [$app_year]);
                 $rrow = $r->fetchAll();
 
                 $output["info"] = $rrow;

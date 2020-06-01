@@ -280,6 +280,7 @@
                                 <th>Employee Name</th>
                                 <th>Total Supplies</th>
                                 <th>Total Equipments</th>
+                                <th>Status</th>
                                 <th width="250">Actions</th>
                             </tr>
                         </thead>
@@ -305,7 +306,7 @@
                                     <div class="modal-header">
                                         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
                                         </button>
-                                        <h4 class="modal-title">QR Codes</h4>
+                                        <h4 class="modal-title">Item List</h4>
                                     </div>
                                     <div class="modal-body">
                                         <table id="dtListItems" class="table table-striped table-bordered">
@@ -400,7 +401,7 @@
                                     <div class="modal-header">
                                         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
                                         </button>
-                                        <h4 class="modal-title">QR Codes</h4>
+                                        <h4 class="modal-title">Item List</h4>
                                     </div>
                                     <div class="modal-body">
                                         <table id="dtAPPItems" class="table table-striped table-bordered">

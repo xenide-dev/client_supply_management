@@ -293,6 +293,16 @@
 
                 $output["msg"] = true;
             }
+        }elseif($_POST["type"] == "ppmp"){
+            if($_POST["operation"] == "processStatus"){
+                $pid = $_POST["pid"];
+                $status = $_POST["status"];
+
+                $u = DB::run("UPDATE ppmp SET status = ? WHERE pid = ?", [$status, $pid]);
+                if($u->rowCount() > 0){
+                    $output["msg"] = true;
+                }
+            }
         }
     }
 

@@ -78,14 +78,25 @@ function loadList(t){
                     var actions = 
                         `<button class="btn btn-primary btn-xs" data-toggle="modal" data-target=".ppmp_items" data-backdrop="static" onclick="loadItems(${element.pid})">View Items</button>
                         <a href="modules/pdf_generator/generate_ppmp_pdf.php?pid=${element.pid}&h=${element.hash}" class="btn btn-primary btn-xs" target="_blank">Generate PDF</a>`;
+                    var approved = `<button class="btn btn-success btn-xs" onclick="changeStatus('Approved', ${element.pid})">Approved</button>`;
+                    var disapproved = `<button class="btn btn-danger btn-xs" onclick="changeStatus('Disapproved', ${element.pid})">Disapproved</button>`;
                     var fullName = element.lname + ", " + element.fname + " " + element.midinit + ".";
+
+                    var status = `<span class="label label-warning">Pending</span>`;
+                    if(element.status == "Approved"){
+                        status = `<span class="label label-success">Approved</span>`;
+                    }else if(element.status == "Disapproved"){
+                        status = `<span class="label label-danger">Disapproved</span>`;
+                    }
+
                     t.row.add([
                         element.created_at,
                         element.ppmp_year,
                         fullName,
                         element.total_supplies,
                         element.total_equipments,
-                        actions
+                        status,
+                        (element.status == "Pending" ? approved + disapproved : '') + actions
                     ]).draw();
                 });
                 loadingCircle.css({'display' : 'none'});
@@ -93,6 +104,36 @@ function loadList(t){
             }else{
                 alert('Error');
             }
+        }
+    });
+}
+
+function changeStatus(status, pid){
+    swal({
+        title: "Are you sure you want to continue?",
+        text: 'Once you proceed, the process cannot be undone!',
+        icon: "warning",
+        buttons: ["No", "Yes"],
+        dangerMode: true,
+    }).then((value) => {
+        if(value){
+            $.ajax({
+                method: 'POST',
+                url: 'modules/asyncUrls/data_entry.php',
+                dataType: 'JSON',
+                data: {
+                    type: 'ppmp',
+                    operation: 'processStatus',
+                    status: status,
+                    pid: pid
+                },
+                success: function(data){
+                    if(data.msg){
+                        window.location.reload();
+                    }
+                }
+            });
+            swal("Success!", "PPMP has been '" + action + "'", "success");
         }
     });
 }
@@ -161,19 +202,28 @@ function loadConsolidated(){
             success: function(data){
                 if(data.msg){                    
                     totalItems = data.info.length;
-                    data.info.forEach(function(value, index){
-                        var template = `<tr class="selected">
-                                            <td>
-                                                <input type="checkbox" class="flat" name="chk_records[]" checked>
-                                                <input type="hidden" name="itemid[]" readonly value="${value.itemid}">
-                                            </td>
-                                            <td>${value.item_name} (${value.item_description})</td>
-                                            <td>${value.total} <input type="hidden" name="requested_qty[]" readonly value="${value.total}"></td>
-                                            <td>${value.requested_unit} <input type="hidden" name="requested_unit[]" readonly value="${value.requested_unit}"></td>
-                                        </tr>`;
-                        $("#tblConsolidated tbody").append(template);
-                    });
-                    init_iCheck();
+                    if(totalItems == 0){
+                        swal({
+                            title: "Oops!",
+                            text: "Empty records",
+                            icon: "error",
+                            buttons: 'Okay'
+                        });
+                    }else{
+                        data.info.forEach(function(value, index){
+                            var template = `<tr class="selected">
+                                                <td>
+                                                    <input type="checkbox" class="flat" name="chk_records[]" checked>
+                                                    <input type="hidden" name="itemid[]" readonly value="${value.itemid}">
+                                                </td>
+                                                <td>${value.item_name} (${value.item_description})</td>
+                                                <td>${value.total} <input type="hidden" name="requested_qty[]" readonly value="${value.total}"></td>
+                                                <td>${value.requested_unit} <input type="hidden" name="requested_unit[]" readonly value="${value.requested_unit}"></td>
+                                            </tr>`;
+                            $("#tblConsolidated tbody").append(template);
+                        });
+                        init_iCheck();
+                    }
                 }
             }
         });

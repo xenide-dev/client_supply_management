@@ -63,11 +63,44 @@
                                 // check if already created
                                 $c = DB::run("SELECT * FROM ppmp WHERE uid = ? AND ppmp_year = ?", [$_SESSION["uid"], $ppmp_year]);
                                 if($crow = $c->fetch()){
+                                    // check if there is an approved ppmp
+                                    if($crow["status"] == "Approved"){
                         ?>
                         <div class="alert alert-danger">
-                            <strong>Oops!</strong> You already created your ppmp for that year
+                            <strong>Oops!</strong> Your ppmp for that year is already approved
                         </div>
                         <?php
+                                    }else if($crow["status"] == "Disapproved"){
+                                        // check total supplies and equipment
+                                        $total_supplies = $total_equipment = 0;
+                                        for ($i=0; $i < count($item_type); $i++) { 
+                                            if($item_type[$i] == "Consumable"){
+                                                $total_supplies++;
+                                            }else{
+                                                $total_equipment++;
+                                            }
+                                        }
+
+                                        // add entry to main ppmp table
+                                        $p = DB::run("INSERT INTO ppmp(uid, ppmp_year, total_supplies, total_equipments) VALUES(?, ?, ?, ?)", [$_SESSION["uid"], $ppmp_year, $total_supplies, $total_equipment]);
+                                        $pid = DB::getLastInsertedID();
+
+                                        // add all items to sub table
+                                        $flag = false;
+                                        for ($i=0; $i < count($itemid); $i++) {
+                                            $pi = DB::run("INSERT INTO ppmp_items(pid, itemid, requested_qty, requested_unit, mon_jan, mon_feb, mon_mar, mon_apr, mon_may, mon_jun, mon_jul, mon_aug, mon_sep, mon_oct, mon_nov, mon_dec) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [$pid, intval($itemid[$i]), intval($requested_qty[$i]), $requested_unit[$i], $mon_jan[$i], $mon_feb[$i], $mon_mar[$i], $mon_apr[$i], $mon_may[$i], $mon_jun[$i], $mon_jul[$i], $mon_aug[$i], $mon_sep[$i], $mon_oct[$i], $mon_nov[$i], $mon_dec[$i]]);
+                                            if($pi->rowCount() > 0){
+                                                $flag = true;
+                                            }
+                                        }
+                                        if($flag){
+                            ?>
+                                <div class="alert alert-success">
+                                    <strong>Success!</strong> Your PPMP has been submitted. Thank you!
+                                </div>
+                            <?php
+                                        }
+                                    }
                                 }else{
                                     // check total supplies and equipment
                                     $total_supplies = $total_equipment = 0;

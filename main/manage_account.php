@@ -317,12 +317,6 @@
                                       <label><input type="checkbox" name="privileges[]" id="list_request" class="js-switch" value="list_request" /> List of Requests</label><br/>
                                       <label><input type="checkbox" name="privileges[]" id="doc_approval" class="js-switch" value="doc_approval" /> Documents for Approval</label><br/>
                                       <label><input type="checkbox" name="privileges[]" id="inspection_supplies_equipments" class="js-switch" value="inspection_supplies_equipments" /> Inspection of Supplies/Equipments</label><br/>
-                                      <label>List of Issuances: </label><br/>
-                                      <div style="margin-left: 20px;">
-                                        <label><input type="checkbox" id="issuance_supplies" name="privileges[]" class="js-switch" value="issuance_supplies" /> Issuance of Supplies</label><br/>
-                                        <label><input type="checkbox" id="issuance_equipments" name="privileges[]" class="js-switch" value="issuance_equipments" /> Issuance of Equipments</label><br/>
-                                        <label><input type="checkbox" id="issuance_records" name="privileges[]" class="js-switch" value="issuance_records" /> Issuance Records</label><br/>
-                                      </div>
                                     </div>
                                     <label>Report Generation:</label>
                                     <div class="form-group">
@@ -427,12 +421,6 @@
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="list_request" /> List of Requests</label><br/>
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="doc_approval" /> Documents for Approval</label><br/>
                                         <label><input type="checkbox" name="privileges[]" class="js-switch" value="inspection_supplies_equipments" /> Inspection of Supplies/Equipments</label><br/>
-                                        <label>List of Issuances: </label><br/>
-                                        <div style="margin-left: 20px;">
-                                          <label><input type="checkbox" id="grp1_1" name="privileges[]" class="js-switch" value="issuance_supplies" /> Issuance of Supplies</label><br/>
-                                          <label><input type="checkbox" id="grp1_2" name="privileges[]" class="js-switch" value="issuance_equipments" /> Issuance of Equipments</label><br/>
-                                          <label><input type="checkbox" id="grp1_3" name="privileges[]" class="js-switch" value="issuance_records" /> Issuance Records</label><br/>
-                                        </div>
                                       </div>
                                       <label>Report Generation:</label>
                                       <div class="form-group">
