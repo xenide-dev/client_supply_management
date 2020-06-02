@@ -34,13 +34,32 @@ $(document).ready(function(){
         });
     });
 
+    // onload
+    addToTable("#orig_po");
+
     // add purchase order number
     var pCounter = 1;
+    var prev = null;
     $("#btnAddOrder").on('click', function(){
+        var orig_po = $("#orig_po").val();
+
+        var arr = orig_po.split("-");
+        var curr = new Date();
+        var code = "";
+        if(arr.length >= 3){
+            if(prev == null){
+                prev = parseInt(arr[2]) + 1;
+            }else{
+                prev = prev + 1;
+            }
+            var code1 = ("00000" + prev).substr(-5,5);
+            code = "PO No. " + curr.getFullYear() + "-" + ("00" + (curr.getMonth() + 1)).substr(-2,2) + "-" + code1;
+        }
+
         var temp = `<div class="row poi_${pCounter}">
                         <div class="col-md-2">
                             <label>Purchase Order No.:</label>
-                            <input type="text" class="form-control" name="po_number[]" placeholder="Please enter purchase order number" onchange="addToTable(this)" required>
+                            <input type="text" class="form-control" name="po_number[]" placeholder="Please enter purchase order number" onchange="addToTable(this)" required value="${code}">
                         </div>
                         <div class="col-md-3">
                             <label>Supplier Name: </label>
@@ -64,6 +83,7 @@ $(document).ready(function(){
         loadList(t, $(this).val());
     });
 });
+
 
 function addToTable(id){
     var p = $(id).parents(".row");
@@ -161,7 +181,7 @@ function loadList(t, sortBy = ""){
                     var accept = `<button type="button" class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'request', 'Accepted', this)"> Accept</button>`;
                     var printPAR = `<a href="modules/pdf_generator/generate_pdf.php?type=par&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs" target="_blank">PAR (PDF)</a>`;
                     var printICS = `<a href="modules/pdf_generator/generate_pdf.php?type=ics&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs" target="_blank">ICS (PDF)</a>`;
-
+                    var printRIS = `<a href="modules/pdf_generator/generate_ris.php?rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs" target="_blank">RIS (PDF)</a>`
 
                     var requestedBy = element.lname + ", " + element.fname + " " + element.midinit;
                     var status = "";
@@ -193,11 +213,12 @@ function loadList(t, sortBy = ""){
                             if(element.status == "Processing"){
                                 actions += issuance;
                             }else if(element.status == "Ready" || element.status == "Delivered"){
-                                if(element.ics_par.indexOf("par") >= 0){
-                                    actions += printPAR;
-                                }else if(element.ics_par.indexOf("ics") >= 0){
-                                    actions += printICS
-                                }
+                                // if(element.ics_par.indexOf("par") >= 0){
+                                //     actions += printPAR;
+                                // }else if(element.ics_par.indexOf("ics") >= 0){
+                                //     actions += printICS
+                                // }
+                                actions += printRIS;
                             }
                         }else if(element.request_type == "Purchase Request"){
                             if(element.status == "Approved"){

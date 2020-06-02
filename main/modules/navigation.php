@@ -17,7 +17,7 @@
       <span>Welcome,</span>
       <h2>
         <?php
-          echo $_SESSION["user_type"];
+          echo $_SESSION["fname"];
         ?>
       </h2>
     </div>

@@ -180,10 +180,30 @@
                           </div>
                           <br/>
                           <div class="purchase_order_container">
+                            <?php
+                              // get the previous code
+                              $pc = DB::run("SELECT * FROM purchase_order ORDER BY created_at DESC");
+                              $code = "";
+                              if($pcrow = $pc->fetch()){
+                                $temp = $pcrow["po_number"];
+                                $arr = explode("-", $temp);
+                                if(count($arr) >= 3){
+                                  if(is_numeric($arr[2])){
+                                    $code = $code = "PO No. " . date("Y") . "-" . date("m") . str_pad(intval($arr[2]) + 1, 5, "0", STR_PAD_LEFT);
+                                  }else{
+
+                                  }
+                                }else{
+                                  // reset to one
+                                  $code = "PO No. " . date("Y") . "-" . date("m") . "-" . str_pad("1", 5, "0", STR_PAD_LEFT);
+                                }
+                                
+                              }
+                            ?>
                             <div class="row po_1">
                               <div class="col-md-2">
                                 <label>Purchase Order No.:</label>
-                                <input type="text" class="form-control" name="po_number[]" placeholder="Please enter purchase order number" onchange="addToTable(this)" required>
+                                <input type="text" class="form-control" name="po_number[]" placeholder="Please enter purchase order number" onchange="addToTable(this)" required value="<?php echo $code; ?>" id="orig_po">
                               </div>
                               <div class="col-md-3">
                                 <label>Supplier Name: </label>
@@ -447,12 +467,33 @@
                       </div>
                       <form action="<?php echo $_SERVER["REQUEST_URI"]; ?>" method="POST">
                         <div class="row">
+                          <?php
+                            // ================================ for PAR ================================ 
+                            // get the previous code
+                            $pc = DB::run("SELECT * FROM supplies_equipment_transaction WHERE report_type = 'par' AND transaction_type = 'Out' ORDER BY created_at DESC");
+                            $parcode = "";
+                            if($pcrow = $pc->fetch()){
+                              $temp = $pcrow["report_item_no"];
+                              $arr = explode("-", $temp);
+                              if(count($arr) >= 3){
+                                if(is_numeric($arr[2])){
+                                  $parcode = "PAR No. " . date("Y") . "-" . date("m") . str_pad(intval($arr[2]) + 1, 5, "0", STR_PAD_LEFT);
+                                }else{
+
+                                }
+                              }else{
+                                // reset to one
+                                $parcode = "PAR No. " . date("Y") . "-" . date("m") . "-" . str_pad("1", 5, "0", STR_PAD_LEFT);
+                              }
+                              
+                            }
+                          ?>
                           <div class="col-md-6">
                             <table class="table table-striped par">
                               <h3>Property Acknowledgement Receipt</h3>
                               <div class="form-group">
                                 <label>PAR No.</label>
-                                <input type="text" name="par_no" class="form-control">
+                                <input type="text" name="par_no" class="form-control" value="<?php echo $parcode; ?>">
                               </div>
                               <thead>
                                 <tr>
@@ -474,7 +515,7 @@
                                 <tr>
                                   <td><?php echo $i + 1; ?></td>
                                   <td>
-                                      <input type="text" class="form-control" name="par_item_no[]" required>
+                                      <input type="text" class="form-control" name="par_item_no[]" required value="<?php echo $parcode . "_" . $i; ?>">
                                   </td>
                                   <td><?php echo $report_items[$i]["item_name"] . "(" . $report_items[$i]["item_description"] . ")"; ?></td>
                                   <td><?php echo $report_items[$i]["requested_qty"]; ?></td>
@@ -501,11 +542,32 @@
                               </tbody>
                             </table>
                           </div>
+                          <?php
+                            // ================================ for ICS ================================ 
+                            // get the previous code
+                            $pc = DB::run("SELECT * FROM supplies_equipment_transaction WHERE report_type = 'ics' AND transaction_type = 'Out' ORDER BY created_at DESC");
+                            $code = "";
+                            if($pcrow = $pc->fetch()){
+                              $temp = $pcrow["report_item_no"];
+                              $arr = explode("-", $temp);
+                              if(count($arr) >= 3){
+                                if(is_numeric($arr[2])){
+                                  $code = "ICS No. " . date("Y") . "-" . date("m") . str_pad(intval($arr[2]) + 1, 5, "0", STR_PAD_LEFT);
+                                }else{
+
+                                }
+                              }else{
+                                // reset to one
+                                $code = "ICS No. " . date("Y") . "-" . date("m") . "-" . str_pad("1", 5, "0", STR_PAD_LEFT);
+                              }
+                              
+                            }
+                          ?>
                           <div class="col-md-6">
                             <h3>Inventory Custodian Slip</h3>
                             <div class="form-group">
                               <label>ICS No.</label>
-                              <input type="text" name="ics_no" class="form-control">
+                              <input type="text" name="ics_no" class="form-control" value="<?php echo $code; ?>">
                             </div>
                             <table class="table table-striped ics">
                               <thead>
@@ -532,7 +594,7 @@
                                   </td>
                                   <td><?php echo $i + 1; ?></td>
                                   <td>
-                                      <input type="text" class="form-control" name="ics_item_no[]" required>
+                                      <input type="text" class="form-control" name="ics_item_no[]" required value="<?php echo $code . "_" . $i; ?>">
                                   </td>
                                   <td><?php echo $report_items[$i]["item_name"] . "(" . $report_items[$i]["item_description"] . ")"; ?></td>
                                   <td><?php echo $report_items[$i]["requested_qty"]; ?></td>
