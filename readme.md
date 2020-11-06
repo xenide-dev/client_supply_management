@@ -20,3 +20,10 @@ A simple web-based management system that focused on supplies and equipments for
 * Can generate reports
 * Account Management
 * Log support
+
+## Installation
+
+* Just clone the repo and save it to www or htdoc directory
+* Import the included sql file much better to use the file with 'create_database' on it so that you don't have to create a database by yourself.
+* Edit the connection settings from main/connection/connection.php
+* Go to your browser and type in the address bar "localhost/client_supply_management/main"
