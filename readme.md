@@ -10,4 +10,13 @@ A simple web-based management system that focused on supplies and equipments for
 
 ## Features
 
-* 
+* Basic CRUD for Item / Equipment and Category; It support adding by bulk thru CSV.
+* Can manage the following transaction
+  * Employee's Item / Equipment Request
+  * Purchase' Orders
+  * Project Procurement Management Plan (PPMP)
+  * Supplies
+* Item / Equipment Monitoring through QR Code
+* Can generate reports
+* Account Management
+* Log support
