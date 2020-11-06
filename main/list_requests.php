@@ -189,15 +189,17 @@
                                 $arr = explode("-", $temp);
                                 if(count($arr) >= 3){
                                   if(is_numeric($arr[2])){
-                                    $code = $code = "PO No. " . date("Y") . "-" . date("m") . str_pad(intval($arr[2]) + 1, 5, "0", STR_PAD_LEFT);
+                                    $code = "PO No. " . date("Y") . "-" . date("m") . "-" . str_pad(intval($arr[2]) + 1, 5, "0", STR_PAD_LEFT);
                                   }else{
-
+                                    
                                   }
                                 }else{
                                   // reset to one
                                   $code = "PO No. " . date("Y") . "-" . date("m") . "-" . str_pad("1", 5, "0", STR_PAD_LEFT);
                                 }
-                                
+                              }else{
+                                // reset to one
+                                $code = "PO No. " . date("Y") . "-" . date("m") . "-" . str_pad("1", 5, "0", STR_PAD_LEFT);
                               }
                             ?>
                             <div class="row po_1">
@@ -485,8 +487,16 @@
                                 // reset to one
                                 $parcode = "PAR No. " . date("Y") . "-" . date("m") . "-" . str_pad("1", 5, "0", STR_PAD_LEFT);
                               }
-                              
+                            }else{
+                              // reset to one
+                              $parcode = "PAR No. " . date("Y") . "-" . date("m") . "-" . str_pad("1", 5, "0", STR_PAD_LEFT);
                             }
+                          ?>
+
+                          <?php
+                            // get request type
+                            $grt = DB::run("SELECT * FROM request WHERE rid = ?", [$_GET["rid"]]);
+                            $grtrow = $grt->fetch();
                           ?>
                           <div class="col-md-6">
                             <table class="table table-striped par">
@@ -547,26 +557,54 @@
                             // get the previous code
                             $pc = DB::run("SELECT * FROM supplies_equipment_transaction WHERE report_type = 'ics' AND transaction_type = 'Out' ORDER BY created_at DESC");
                             $code = "";
+                            $prefix = "ICS";
+
+                            if($grtrow["request_type"] == "Requisition"){
+                              $prefix = "RIS";
+                            }
+
                             if($pcrow = $pc->fetch()){
                               $temp = $pcrow["report_item_no"];
                               $arr = explode("-", $temp);
                               if(count($arr) >= 3){
-                                if(is_numeric($arr[2])){
-                                  $code = "ICS No. " . date("Y") . "-" . date("m") . str_pad(intval($arr[2]) + 1, 5, "0", STR_PAD_LEFT);
+                                if(is_numeric(intval($arr[2]))){
+                                  $code = $prefix . " No. " . date("Y") . "-" . date("m") . str_pad(intval($arr[2]) + 1, 5, "0", STR_PAD_LEFT);
                                 }else{
-
+                                  
                                 }
                               }else{
                                 // reset to one
-                                $code = "ICS No. " . date("Y") . "-" . date("m") . "-" . str_pad("1", 5, "0", STR_PAD_LEFT);
+                                $code = $prefix . " No. " . date("Y") . "-" . date("m") . "-" . str_pad("1", 5, "0", STR_PAD_LEFT);
                               }
-                              
+                            }else{
+                              // reset to one
+                              $code = $prefix . " No. " . date("Y") . "-" . date("m") . "-" . str_pad("1", 5, "0", STR_PAD_LEFT);
                             }
                           ?>
                           <div class="col-md-6">
+                            <?php
+                              if($grtrow["request_type"] == "Requisition"){
+                            ?>
+                            <h3>Requisition and Issue Slip</h3>
+                            <?php
+                              }else{
+                            ?>
                             <h3>Inventory Custodian Slip</h3>
+                            <?php
+                              }
+                            ?>
                             <div class="form-group">
+                              <?php
+                                if($grtrow["request_type"] == "Requisition"){
+                              ?>
+                              <label>RIS No.</label>
+                              <?php
+                                }else{
+                              ?>
                               <label>ICS No.</label>
+                              <?php
+                                }
+                              ?>
                               <input type="text" name="ics_no" class="form-control" value="<?php echo $code; ?>">
                             </div>
                             <table class="table table-striped ics">

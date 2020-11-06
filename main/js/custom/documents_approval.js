@@ -48,7 +48,7 @@ function loadData(id, tableName, containerID, additional_info = ''){
                             var t = `<tr>
                                         <td>${key + 1}</td>
                                         <td>${value.item_code}</td>
-                                        <td>${value.item_description}</td>
+                                        <td>${value.item_name} / ${value.item_description}</td>
                                         <td>${value.requested_qty}</td>
                                         <td>${value.requested_unit}</td>
                                     </tr>`;
@@ -80,7 +80,7 @@ function loadData(id, tableName, containerID, additional_info = ''){
                                 var t = `<tr>
                                             <td>${key + 1}</td>
                                             <td>${value.item_code}</td>
-                                            <td>${value.item_description}</td>
+                                            <td>${value.item_name} / ${value.item_description}</td>
                                             <td>${value.requested_qty}</td>
                                             <td>${value.requested_unit}</td>
                                             <td>₱ ${formatCurrency(value.unit_cost, true)}</td>

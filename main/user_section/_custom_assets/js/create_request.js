@@ -119,6 +119,9 @@ function init_select2(id, pID){
                     if(data.info.rem_qty != undefined){
                         if(data.info.rem_qty != 0){
                             $(pID).find('.item_qty').prop("max", data.info.rem_qty);
+                        }else{
+                            $(pID).find('.item_qty').val(0);
+                            $(pID).find('.item_qty').prop("disabled", true);
                         }
                     }
 

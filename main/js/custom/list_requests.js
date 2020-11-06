@@ -43,39 +43,46 @@ $(document).ready(function(){
     $("#btnAddOrder").on('click', function(){
         var orig_po = $("#orig_po").val();
 
-        var arr = orig_po.split("-");
-        var curr = new Date();
-        var code = "";
-        if(arr.length >= 3){
-            if(prev == null){
-                prev = parseInt(arr[2]) + 1;
-            }else{
-                prev = prev + 1;
+        // check if orig po is empty
+        if(orig_po != ""){
+            var arr = orig_po.split("-");
+            var curr = new Date();
+            var code = "";
+            if(arr.length >= 3){
+                if(prev == null){
+                    prev = parseInt(arr[2]) + 1;
+                }else{
+                    prev = prev + 1;
+                }
+                var code1 = ("00000" + prev).substr(-5,5);
+                code = "PO No. " + curr.getFullYear() + "-" + ("00" + (curr.getMonth() + 1)).substr(-2,2) + "-" + code1;
             }
-            var code1 = ("00000" + prev).substr(-5,5);
-            code = "PO No. " + curr.getFullYear() + "-" + ("00" + (curr.getMonth() + 1)).substr(-2,2) + "-" + code1;
-        }
 
-        var temp = `<div class="row poi_${pCounter}">
-                        <div class="col-md-2">
-                            <label>Purchase Order No.:</label>
-                            <input type="text" class="form-control" name="po_number[]" placeholder="Please enter purchase order number" onchange="addToTable(this)" required value="${code}">
-                        </div>
-                        <div class="col-md-3">
-                            <label>Supplier Name: </label>
-                            <input type="text" class="form-control" name="supplier_name[]" placeholder="Please enter supplier name" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Supplier Address: </label>
-                            <input type="text" class="form-control" name="supplier_address[]" placeholder="Please enter supplier address" required>
-                        </div>
-                        <div class="col-md-1">
-                            <label>&nbsp;</label>
-                            <button type="button" class="btn btn-danger form-control" onclick="deletePurchaseRow('.poi_${pCounter}')"><span class="fa fa-trash"></span></button>
-                        </div>
-                    </div>`;
-        $(".purchase_order_container").append(temp);
-        pCounter++;
+            var temp = `<div class="row poi_${pCounter}">
+                            <div class="col-md-2">
+                                <label>Purchase Order No.:</label>
+                                <input type="text" class="form-control" name="po_number[]" placeholder="Please enter purchase order number" onchange="addToTable(this)" required value="${code}">
+                            </div>
+                            <div class="col-md-3">
+                                <label>Supplier Name: </label>
+                                <input type="text" class="form-control" name="supplier_name[]" placeholder="Please enter supplier name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Supplier Address: </label>
+                                <input type="text" class="form-control" name="supplier_address[]" placeholder="Please enter supplier address" required>
+                            </div>
+                            <div class="col-md-1">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-danger form-control" onclick="deletePurchaseRow('.poi_${pCounter}')"><span class="fa fa-trash"></span></button>
+                            </div>
+                        </div>`;
+            $(".purchase_order_container").append(temp);
+            
+            addToTable(".poi_" + pCounter + " [name*='po_number'");
+            pCounter++;
+        }else{
+            swal("Error!", "Purchase order number is empty", "error");
+        }
     });
 
     // sort by
@@ -177,6 +184,7 @@ function loadList(t, sortBy = ""){
                     var view_items = `<button class="btn btn-primary btn-xs" onclick="loadData(` + element.rid + `, 'request', '#requestItemsContainer tbody');" data-toggle="modal" data-target=".view_request">View Items</button>`;
                     // var issuance = `<button class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'issuance', 'Ready', this)"> Ready for Issuance</button>`;
                     var issuance = `<a href="list_requests.php?type=make_issuance_report&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">Prepare PAR/ICS</a>`;
+                    var issuanceRIS = `<a href="list_requests.php?type=make_issuance_report&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs">Prepare RIS</a>`;
                     var prepare_purchase_order = `<a href="list_requests.php?type=make_order&rid=` + element.rid + `" class="btn btn-success btn-xs" onclick="loadData(` + element.rid + `, 'item')" > Prepare Purchase Order</a>`;
                     var accept = `<button type="button" class="btn btn-success btn-xs" onclick="processAction(` + element.rid + `, 'request', 'Accepted', this)"> Accept</button>`;
                     var printPAR = `<a href="modules/pdf_generator/generate_pdf.php?type=par&rid=` + element.rid + `&h=` + element.hash_val + `" class="btn btn-success btn-xs" target="_blank">PAR (PDF)</a>`;
@@ -211,7 +219,7 @@ function loadList(t, sortBy = ""){
                     if(element.cur_user_type == "Administrator"){
                         if(element.request_type == "Requisition"){
                             if(element.status == "Processing"){
-                                actions += issuance;
+                                actions += issuanceRIS;
                             }else if(element.status == "Ready" || element.status == "Delivered"){
                                 // if(element.ics_par.indexOf("par") >= 0){
                                 //     actions += printPAR;
