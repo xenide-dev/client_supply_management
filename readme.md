@@ -2,7 +2,7 @@
 
 A simple web-based management system that focused on supplies and equipments for a government. It was created using simple php with no framework on the frontend.
 
-! [cover] [https://github.com]
+![cover image](https://github.com/xenide-dev/client_supply_management/blob/master/assets/images/cover.jpg)
 
 ## Future Plan
 
